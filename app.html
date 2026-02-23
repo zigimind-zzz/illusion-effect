@@ -1378,15 +1378,13 @@ const S={
 // INTRO — SLOT LOADING
 // ══════════════════════════════════════════════════════
 function loadSlot(n,inp){
-  console.log('loadSlot called, n='+n+', files='+inp.files.length);
-  const f=inp.files[0];
-  if(!f){console.log('No file!');return;}
-  console.log('File: '+f.name+', size='+f.size+', type='+f.type);
+  alert('loadSlot called! files: '+(inp.files?inp.files.length:0));
+  const f=inp.files[0]; 
+  if(!f){alert('No file selected!');return;}
+  alert('File: '+f.name+' ('+f.size+' bytes)');
   const url=URL.createObjectURL(f);
-  console.log('URL created: '+url);
   const img=new Image();
   img.onload=()=>{
-    console.log('Image loaded! '+img.naturalWidth+'x'+img.naturalHeight);
     const cv=$(n===1?'slot1Canvas':'slot2Canvas');
     cv.width=img.naturalWidth||300;cv.height=img.naturalHeight||300;
     const ctx=cv.getContext('2d');
@@ -1397,15 +1395,10 @@ function loadSlot(n,inp){
     cv.classList.add('loaded');
     $(`slot${n}Inner`).style.opacity='0';
     checkEnterReady();
-    console.log('Done! slot'+n+' loaded.');
     URL.revokeObjectURL(url);
   };
-  img.onerror=(e)=>{
-    console.log('Image error!',e);
-    alert('Error loading image: '+f.name);
-  };
+  img.onerror=()=>{alert('Error loading image. Please try again.');};
   img.src=url;
-  console.log('img.src set');
 }
 
 function checkEnterReady(){
