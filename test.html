@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test</title>
+<style>
+body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+#box{width:200px;height:200px;border:2px solid gold;position:relative;display:flex;align-items:center;justify-content:center}
+#fi{position:absolute;inset:0;opacity:0;width:100%;height:100%;z-index:10}
+#msg{color:gold;font-family:monospace;font-size:14px;text-align:center;padding:10px}
+#result{position:fixed;bottom:20px;left:0;right:0;color:lime;font-family:monospace;font-size:13px;text-align:center;padding:10px;background:rgba(0,0,0,.8)}
+</style>
+</head>
+<body>
+<div id="box">
+  <input type="file" accept="image/*" id="fi" onchange="loaded(this)">
+  <div id="msg">TAP HERE</div>
+</div>
+<div id="result">Waiting...</div>
+<script>
+function loaded(inp){
+  var f=inp.files[0];
+  if(!f){document.getElementById('result').textContent='No file!';return;}
+  document.getElementById('result').textContent='Got: '+f.name+' ('+f.size+' bytes)';
+  document.getElementById('msg').textContent='LOADED!';
+}
+</script>
+</body>
+</html>
