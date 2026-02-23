@@ -1379,24 +1379,23 @@ const S={
 // ══════════════════════════════════════════════════════
 function loadSlot(n,inp){
   const f=inp.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const cv=$(n===1?'slot1Canvas':'slot2Canvas');
-      cv.width=img.width;cv.height=img.height;
-      const ctx=cv.getContext('2d');
-      ctx.drawImage(img,0,0);
-      const id=ctx.getImageData(0,0,img.width,img.height);
-      if(n===1){S.slot1=id;S.slot1URL=r.result;}
-      else{S.slot2=id;S.slot2URL=r.result;}
-      cv.classList.add('loaded');
-      $(`slot${n}Inner`).style.opacity='0';
-      checkEnterReady();
-    };
-    img.src=e.target.result;
+  const url=URL.createObjectURL(f);
+  const img=new Image();
+  img.onload=()=>{
+    const cv=$(n===1?'slot1Canvas':'slot2Canvas');
+    cv.width=img.naturalWidth||300;cv.height=img.naturalHeight||300;
+    const ctx=cv.getContext('2d');
+    ctx.drawImage(img,0,0);
+    const id=ctx.getImageData(0,0,cv.width,cv.height);
+    if(n===1){S.slot1=id;S.slot1URL=url;}
+    else{S.slot2=id;S.slot2URL=url;}
+    cv.classList.add('loaded');
+    $(`slot${n}Inner`).style.opacity='0';
+    checkEnterReady();
+    URL.revokeObjectURL(url);
   };
-  r.readAsDataURL(f);
+  img.onerror=()=>{alert('Error loading image. Please try again.');};
+  img.src=url;
 }
 
 function checkEnterReady(){
