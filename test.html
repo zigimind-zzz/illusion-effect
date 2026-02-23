@@ -589,14 +589,6 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
 </style>
 </head>
 <body>
-<div id="__err" style="position:fixed;top:0;left:0;right:0;background:red;color:white;font-family:monospace;font-size:11px;padding:8px;z-index:99999;display:none;word-break:break-all"></div>
-<script>
-window.onerror=function(msg,src,line){
-  var el=document.getElementById('__err');
-  if(el){el.style.display='block';el.textContent='JS ERROR line '+line+': '+msg;}
-  return false;
-};
-</script>
 
 <!-- ══════════ DALI BACKGROUND ══════════ -->
 <canvas id="daliCanvas"></canvas>
@@ -2581,7 +2573,7 @@ function executeMigration(){
     const row=document.createElement('div');
     row.className='km-dl-row';
     row.style.marginTop='.5rem';
-    row.innerHTML='<button class="btn btn-sky" onclick="dlNewKey()" style="margin-bottom:0"><span>הורד Key חדש PNG</span></button>';
+    row.innerHTML='<button class="btn btn-sky" onclick="dlNewKey()" style="margin-bottom:0"><span>Download New Key PNG</span></button>';
     $('kmSt').insertAdjacentElement('afterend',row);
   }
 }
