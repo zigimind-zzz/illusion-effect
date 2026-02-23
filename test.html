@@ -589,6 +589,14 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
 </style>
 </head>
 <body>
+<div id="__err" style="position:fixed;top:0;left:0;right:0;background:red;color:white;font-family:monospace;font-size:11px;padding:8px;z-index:99999;display:none;word-break:break-all"></div>
+<script>
+window.onerror=function(msg,src,line){
+  var el=document.getElementById('__err');
+  if(el){el.style.display='block';el.textContent='JS ERROR line '+line+': '+msg;}
+  return false;
+};
+</script>
 
 <!-- ══════════ DALI BACKGROUND ══════════ -->
 <canvas id="daliCanvas"></canvas>
@@ -1439,7 +1447,7 @@ function enterApp(){
   $('decKMeta').textContent=`${S.encK.width}×${S.encK.height}`;
 
   // Update key badge
-  $('keyBadge').textContent='KEY: טעון ✓';
+  $('keyBadge').textContent='KEY: \u05d8\u05e2\u05d5\u05df ✓';
   $('keyBadge').className='key-badge ok';
 
   $('encBtn').disabled=false;
@@ -1545,7 +1553,7 @@ function updateCap(){
   const fill=$('capFill');
   fill.style.width=pct+'%';
   fill.style.background=pct>90?'#ef4444':pct>70?'#f59e0b':'var(--gold)';
-  $('capTxt').textContent=`${fmtSz(enc)} / ${fmtSz(max)} · פנוי: ${fmtSz(Math.max(max-enc,0))}`;
+  $('capTxt').textContent=`${fmtSz(enc)} / ${fmtSz(max)} · \u05e4\u05e0\u05d5\u05d9: ${fmtSz(Math.max(max-enc,0))}`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1652,7 +1660,7 @@ function showKeyMeta(p){
   $('mLast').textContent=at.length?new Date(at[at.length-1]).toLocaleTimeString('he-IL'):'-';
   const cnt=$('mCnt');cnt.textContent=`${recent.length}/${rl.maxA}`;
   cnt.className='meta-v'+(blocked?' bad':recent.length>rl.maxA*.6?' warn':' ok');
-  const st=$('mStat');st.textContent=blocked?'⛔ חסום':'✓ פתוח';
+  const st=$('mStat');st.textContent=blocked?'⛔ \u05d7\u05e1\u05d5\u05dd':'✓ \u05e4\u05ea\u05d5\u05d7';
   st.className='meta-v'+(blocked?' bad':' ok');
   updateMeter(recent.length,rl.maxA);
 }
@@ -1675,16 +1683,16 @@ function updateMeter(n,max){
 // ══════════════════════════════════════════════════════
 async function encodeAll(){
   setSt('encSt','','');
-  if(!S.encC||!S.encK){setSt('encSt','חסרות תמונות.','err');return}
+  if(!S.encC||!S.encK){setSt('encSt','\u05d7\u05e1\u05e8\u05d5\u05ea \u05ea\u05de\u05d5\u05e0\u05d5\u05ea.','err');return}
 
   let rawBytes;
   if(S.payloadType==='text'){
     const txt=$('secretTxt').value;
-    if(!txt){setSt('encSt','אין תוכן להצפנה.','err');return}
+    if(!txt){setSt('encSt','\u05d0\u05d9\u05df \u05ea\u05d5\u05db\u05df \u05dc\u05d4\u05e6\u05e4\u05e0\u05d4.','err');return}
     rawBytes=new TextEncoder().encode(txt);
     S.payloadMime='text/plain';S.payloadName='message.txt';
   } else {
-    if(!S.payloadBytes){setSt('encSt','לא נבחר קובץ.','err');return}
+    if(!S.payloadBytes){setSt('encSt','\u05dc\u05d0 \u05e0\u05d1\u05d7\u05e8 \u05e7\u05d5\u05d1\u05e5.','err');return}
     rawBytes=S.payloadBytes;
   }
 
@@ -1694,9 +1702,9 @@ async function encodeAll(){
   try{
     aesKey=await aesGen();keyRaw=await aesExport(aesKey);
     ciphertext=await aesEnc(aesKey,rawBytes);
-  }catch(e){setSt('encSt','שגיאת AES: '+e.message,'err');return}
+  }catch(e){setSt('encSt','\u05e9\u05d2\u05d9\u05d0\u05ea AES: '+e.message,'err');return}
 
-  if(ciphertext.length>maxC){setSt('encSt',`קובץ גדול מדי. קיבולת: ${fmtSz(maxC)}. נדרש: ${fmtSz(ciphertext.length)}`,'err');return}
+  if(ciphertext.length>maxC){setSt('encSt',`\u05e7\u05d5\u05d1\u05e5 \u05d2\u05d3\u05d5\u05dc \u05de\u05d3\u05d9. \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: ${fmtSz(maxC)}. \u05e0\u05d3\u05e8\u05e9: ${fmtSz(ciphertext.length)}`,'err');return}
 
   // Read existing RL data from Key image if any
   const existingBytes=lsbExtract(S.encK);
@@ -1704,7 +1712,7 @@ async function encodeAll(){
   const at=(existingP&&existingP.at)||[];
 
   const kp=buildKP(keyRaw,S.rl,at,S.payloadName,S.payloadMime);
-  if(kp.length>maxK){setSt('encSt',`Key קטן מדי. נדרש: ${fmtSz(kp.length)}. יש: ${fmtSz(maxK)}`,'err');return}
+  if(kp.length>maxK){setSt('encSt',`Key \u05e7\u05d8\u05df \u05de\u05d3\u05d9. \u05e0\u05d3\u05e8\u05e9: ${fmtSz(kp.length)}. \u05d9\u05e9: ${fmtSz(maxK)}`,'err');return}
 
   // Embed
   const cPx=lsbEmbed(S.encC,ciphertext);
@@ -1720,7 +1728,7 @@ async function encodeAll(){
   S.encK=tmp.getContext('2d').getImageData(0,0,tmp.width,tmp.height);
 
   $('dlCBtn').disabled=false;$('dlKBtn').disabled=false;
-  setSt('encSt',`✓ הצפנה הושלמה!\n${S.payloadName} · ${fmtSz(rawBytes.length)}\nAES-256-GCM · Rate Limit: ${S.rl.maxA}/${S.rl.win}s/${S.rl.lock}min`,'ok');
+  setSt('encSt',`✓ \u05d4\u05e6\u05e4\u05e0\u05d4 \u05d4\u05d5\u05e9\u05dc\u05de\u05d4!\n${S.payloadName} · ${fmtSz(rawBytes.length)}\nAES-256-GCM · Rate Limit: ${S.rl.maxA}/${S.rl.win}s/${S.rl.lock}min`,'ok');
   updateCap();
 }
 
@@ -1729,13 +1737,13 @@ async function encodeAll(){
 // ══════════════════════════════════════════════════════
 async function decodeAll(){
   setSt('decSt','','');
-  if(Date.now()<S.lockUntil){setSt('decSt','⛔ חסום — המתן לסיום הספירה.','err');return}
-  if(!S.decC||!S.decK){setSt('decSt','חסרות תמונות.','err');return}
+  if(Date.now()<S.lockUntil){setSt('decSt','⛔ \u05d7\u05e1\u05d5\u05dd — \u05d4\u05de\u05ea\u05df \u05dc\u05e1\u05d9\u05d5\u05dd \u05d4\u05e1\u05e4\u05d9\u05e8\u05d4.','err');return}
+  if(!S.decC||!S.decK){setSt('decSt','\u05d7\u05e1\u05e8\u05d5\u05ea \u05ea\u05de\u05d5\u05e0\u05d5\u05ea.','err');return}
 
   const kBytes=lsbExtract(S.decK);
-  if(!kBytes){setSt('decSt','לא נמצא מפתח ב-Key image.','err');daliMismatch();return}
+  if(!kBytes){setSt('decSt','\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0 \u05de\u05e4\u05ea\u05d7 \u05d1-Key image.','err');daliMismatch();return}
   const kp=parseKP(kBytes);
-  if(!kp||!kp.k||!kp.rl){setSt('decSt','Key image לא תקין.','err');daliMismatch();return}
+  if(!kp||!kp.k||!kp.rl){setSt('decSt','Key image \u05dc\u05d0 \u05ea\u05e7\u05d9\u05df.','err');daliMismatch();return}
 
   const rl=kp.rl,at=kp.at||[],now=Date.now();
   const recent=at.filter(t=>now-t<rl.win*1000);
@@ -1744,19 +1752,19 @@ async function decodeAll(){
   if(recent.length>=rl.maxA){
     const ua=[...at,now];writeUpdKey(kp,ua);
     triggerLock(rl.lock,ua);
-    setSt('decSt',`⛔ יותר מדי ניסיונות! חסום ל-${rl.lock} דקות.`,'err');
+    setSt('decSt',`⛔ \u05d9\u05d5\u05ea\u05e8 \u05de\u05d3\u05d9 \u05e0\u05d9\u05e1\u05d9\u05d5\u05e0\u05d5\u05ea! \u05d7\u05e1\u05d5\u05dd \u05dc-${rl.lock} \u05d3\u05e7\u05d5\u05ea.`,'err');
     return;
   }
 
   const cBytes=lsbExtract(S.decC);
-  if(!cBytes){setSt('decSt','לא נמצאו נתונים ב-Carrier.','err');daliMismatch();return}
+  if(!cBytes){setSt('decSt','\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0\u05d5 \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05d1-Carrier.','err');daliMismatch();return}
 
   let plain;
   try{
     const k=await aesImport(new Uint8Array(kp.k));
     plain=await aesDec(k,cBytes);
   }catch(e){
-    setSt('decSt','שגיאת AES – Key לא תואם או Carrier פגום.','err');
+    setSt('decSt','\u05e9\u05d2\u05d9\u05d0\u05ea AES – Key \u05dc\u05d0 \u05ea\u05d5\u05d0\u05dd \u05d0\u05d5 Carrier \u05e4\u05d2\u05d5\u05dd.','err');
     daliMismatch();return;
   }
 
@@ -1780,7 +1788,7 @@ async function decodeAll(){
   }
 
   showKeyMeta({rl,at:ua});
-  setSt('decSt',`✓ פוענח! · ${name} · ${fmtSz(plain.length)}\nנותרו ${remaining} ניסיונות`,'ok');
+  setSt('decSt',`✓ \u05e4\u05d5\u05e2\u05e0\u05d7! · ${name} · ${fmtSz(plain.length)}\n\u05e0\u05d5\u05ea\u05e8\u05d5 ${remaining} \u05e0\u05d9\u05e1\u05d9\u05d5\u05e0\u05d5\u05ea`,'ok');
   // Unlock key migration after successful decode
   unlockMigration({...kp, at:ua});
 }
@@ -1857,8 +1865,8 @@ function dlExtracted(){
 }
 function copyResult(){
   navigator.clipboard.writeText($('rTextBox').textContent).then(()=>{
-    const b=document.querySelector('.copy-btn');b.textContent='הועתק ✓';
-    setTimeout(()=>b.textContent='העתק ללוח',1800);
+    const b=document.querySelector('.copy-btn');b.textContent='\u05d4\u05d5\u05e2\u05ea\u05e7 ✓';
+    setTimeout(()=>b.textContent='\u05d4\u05e2\u05ea\u05e7 \u05dc\u05dc\u05d5\u05d7',1800);
   });
 }
 
@@ -1869,7 +1877,7 @@ function renderVault(){
   const list=$('vaultList');
   list.innerHTML='';
   if(!S.vault.length){
-    list.innerHTML='<div style="padding:1rem;font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.25);text-align:center">הכספת ריקה</div>';
+    list.innerHTML='<div style="padding:1rem;font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.25);text-align:center">\u05d4\u05db\u05e1\u05e4\u05ea \u05e8\u05d9\u05e7\u05d4</div>';
     return;
   }
   S.vault.forEach((item,i)=>{
@@ -1884,17 +1892,17 @@ function renderVault(){
   // refresh vault pick in encode
   const sel=$('vaultPick');
   const cur=sel.value;
-  sel.innerHTML='<option value="">— בחר רשומה מהכספת —</option>';
+  sel.innerHTML='<option value="">— \u05d1\u05d7\u05e8 \u05e8\u05e9\u05d5\u05de\u05d4 \u05de\u05d4\u05db\u05e1\u05e4\u05ea —</option>';
   S.vault.forEach((item,i)=>{
     const opt=document.createElement('option');
-    opt.value=i;opt.textContent=item.name||`רשומה ${i+1}`;
+    opt.value=i;opt.textContent=item.name||`\u05e8\u05e9\u05d5\u05de\u05d4 ${i+1}`;
     sel.appendChild(opt);
   });
   sel.value=cur;
 }
 
 function newVaultEntry(){
-  S.vault.push({name:'רשומה חדשה',content:'',date:new Date().toLocaleDateString('he-IL')});
+  S.vault.push({name:'\u05e8\u05e9\u05d5\u05de\u05d4 \u05d7\u05d3\u05e9\u05d4',content:'',date:new Date().toLocaleDateString('he-IL')});
   S.vaultSel=S.vault.length-1;
   renderVault();
   openVaultEntry(S.vaultSel);
@@ -1904,15 +1912,15 @@ function openVaultEntry(i){
   const item=S.vault[i];
   $('vaultEditor').innerHTML=`
     <div class="vault-name-row">
-      <input class="input-field" id="vNameInp" value="${escHtml(item.name||'')}" oninput="S.vault[${i}].name=this.value;renderVault()" placeholder="שם הרשומה...">
+      <input class="input-field" id="vNameInp" value="${escHtml(item.name||'')}" oninput="S.vault[${i}].name=this.value;renderVault()" placeholder="\u05e9\u05dd \u05d4\u05e8\u05e9\u05d5\u05de\u05d4...">
     </div>
-    <label class="lbl" style="margin-top:.3rem">תוכן (טקסט, סיסמה, הערות...)</label>
-    <textarea id="vContentInp" style="min-height:160px;direction:rtl" oninput="S.vault[${i}].content=this.value" placeholder="הכנס סיסמה, הערה, או כל מידע...">${escHtml(item.content||'')}</textarea>
+    <label class="lbl" style="margin-top:.3rem">\u05ea\u05d5\u05db\u05df (\u05d8\u05e7\u05e1\u05d8, \u05e1\u05d9\u05e1\u05de\u05d4, \u05d4\u05e2\u05e8\u05d5\u05ea...)</label>
+    <textarea id="vContentInp" style="min-height:160px;direction:rtl" oninput="S.vault[${i}].content=this.value" placeholder="\u05d4\u05db\u05e0\u05e1 \u05e1\u05d9\u05e1\u05de\u05d4, \u05d4\u05e2\u05e8\u05d4, \u05d0\u05d5 \u05db\u05dc \u05de\u05d9\u05d3\u05e2...">${escHtml(item.content||'')}</textarea>
     <div style="display:flex;gap:.4rem">
-      <button class="btn btn-gold" onclick="copyVaultItem(${i})" style="margin-bottom:0"><span>העתק לפתח הצפנה</span></button>
-      <button class="copy-btn" onclick="copyVaultContent(${i})" style="flex-shrink:0">העתק ללוח</button>
+      <button class="btn btn-gold" onclick="copyVaultItem(${i})" style="margin-bottom:0"><span>\u05d4\u05e2\u05ea\u05e7 \u05dc\u05e4\u05ea\u05d7 \u05d4\u05e6\u05e4\u05e0\u05d4</span></button>
+      <button class="copy-btn" onclick="copyVaultContent(${i})" style="flex-shrink:0">\u05d4\u05e2\u05ea\u05e7 \u05dc\u05dc\u05d5\u05d7</button>
     </div>
-    <div class="note" style="margin-top:.5rem">⚠ מידע זה קיים בזיכרון האפליקציה בלבד.<br>לא נשמר בקבצים, cookies, או localStorage.</div>
+    <div class="note" style="margin-top:.5rem">⚠ \u05de\u05d9\u05d3\u05e2 \u05d6\u05d4 \u05e7\u05d9\u05d9\u05dd \u05d1\u05d6\u05d9\u05db\u05e8\u05d5\u05df \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4 \u05d1\u05dc\u05d1\u05d3.<br>\u05dc\u05d0 \u05e0\u05e9\u05de\u05e8 \u05d1\u05e7\u05d1\u05e6\u05d9\u05dd, cookies, \u05d0\u05d5 localStorage.</div>
   `;
 }
 
@@ -1923,7 +1931,7 @@ function copyVaultItem(i){
   setPT('text',document.querySelector('.pt-b'));
   updateCap();
   showPanel('pEncode',document.querySelector('.nav-btn.active'));
-  setSt('encSt',`✓ טקסט "${item.name}" נטען ממהכספת.`,'ok');
+  setSt('encSt',`✓ \u05d8\u05e7\u05e1\u05d8 "${item.name}" \u05e0\u05d8\u05e2\u05df \u05de\u05de\u05d4\u05db\u05e1\u05e4\u05ea.`,'ok');
 }
 
 function copyVaultContent(i){
@@ -1936,7 +1944,7 @@ function delVault(i,e){
   if(S.vaultSel>=S.vault.length) S.vaultSel=S.vault.length-1;
   renderVault();
   if(S.vault.length&&S.vaultSel>=0) openVaultEntry(S.vaultSel);
-  else $('vaultEditor').innerHTML='<div class="note" style="text-align:center;padding:2rem">בחר רשומה או צור חדשה</div>';
+  else $('vaultEditor').innerHTML='<div class="note" style="text-align:center;padding:2rem">\u05d1\u05d7\u05e8 \u05e8\u05e9\u05d5\u05de\u05d4 \u05d0\u05d5 \u05e6\u05d5\u05e8 \u05d7\u05d3\u05e9\u05d4</div>';
 }
 
 function pickFromVault(){
@@ -2023,7 +2031,7 @@ function parseWavHeader(buf){
   const dec = (off,len) => String.fromCharCode(...new Uint8Array(buf,off,len));
 
   if(dec(0,4) !== 'RIFF' || dec(8,4) !== 'WAVE')
-    throw new Error('לא קובץ WAV תקין');
+    throw new Error('\u05dc\u05d0 \u05e7\u05d5\u05d1\u05e5 WAV \u05ea\u05e7\u05d9\u05df');
 
   let offset = 12;
   let fmt = null, dataOffset = 0, dataLen = 0;
@@ -2047,10 +2055,10 @@ function parseWavHeader(buf){
     if(chunkSize % 2 !== 0) offset++; // word-align
   }
 
-  if(!fmt)  throw new Error('לא נמצא chunk fmt ב-WAV');
-  if(!dataLen) throw new Error('לא נמצא chunk data ב-WAV');
-  if(fmt.audioFormat !== 1) throw new Error('נדרש WAV PCM (לא compressed). פורמט: '+fmt.audioFormat);
-  if(fmt.bitsPerSample !== 16) throw new Error('נדרש WAV 16-bit. נמצא: '+fmt.bitsPerSample+'-bit');
+  if(!fmt)  throw new Error('\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0 chunk fmt \u05d1-WAV');
+  if(!dataLen) throw new Error('\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0 chunk data \u05d1-WAV');
+  if(fmt.audioFormat !== 1) throw new Error('\u05e0\u05d3\u05e8\u05e9 WAV PCM (\u05dc\u05d0 compressed). \u05e4\u05d5\u05e8\u05de\u05d8: '+fmt.audioFormat);
+  if(fmt.bitsPerSample !== 16) throw new Error('\u05e0\u05d3\u05e8\u05e9 WAV 16-bit. \u05e0\u05de\u05e6\u05d0: '+fmt.bitsPerSample+'-bit');
 
   return { ...fmt, dataOffset, dataLen };
 }
@@ -2192,7 +2200,7 @@ async function updateWavCapacity(){
   const fill = $('wavCapFill');
   fill.style.width = pct + '%';
   fill.style.background = pct>90?'#ef4444':pct>70?'#f59e0b':'var(--sky)';
-  $('wavCapTxt').textContent = `נדרש: ${fmtSz(estSize)} / קיבולת: ${fmtSz(cap)} · ${pct.toFixed(1)}%`;
+  $('wavCapTxt').textContent = `\u05e0\u05d3\u05e8\u05e9: ${fmtSz(estSize)} / \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: ${fmtSz(cap)} · ${pct.toFixed(1)}%`;
   $('wavBkpCapInfo').style.display = 'block';
   $('wavBkpBtn').disabled = pct > 100;
 }
@@ -2216,14 +2224,14 @@ function loadWavBase(inp){
       const dur = hdr.dataLen / (hdr.sampleRate * hdr.numChannels * 2);
       const info = $('wavBaseInfo');
       info.style.display = 'block';
-      info.textContent = `${f.name} · ${fmtSz(f.size)} · ${dur.toFixed(1)}s · ${hdr.sampleRate}Hz · ${hdr.numChannels}ch · קיבולת: ${fmtSz(cap)}`;
+      info.textContent = `${f.name} · ${fmtSz(f.size)} · ${dur.toFixed(1)}s · ${hdr.sampleRate}Hz · ${hdr.numChannels}ch · \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: ${fmtSz(cap)}`;
 
       drawWaveform(buf, hdr);
       $('wavWaveform').classList.add('on');
       $('wavBkpBtn').disabled = false;
       updateWavCapacity();
     } catch(err){
-      setSt('wavBkpSt', 'שגיאה בקריאת WAV: ' + err.message, 'err');
+      setSt('wavBkpSt', '\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d1\u05e7\u05e8\u05d9\u05d0\u05ea WAV: ' + err.message, 'err');
     }
   };
   reader.readAsArrayBuffer(f);
@@ -2267,25 +2275,25 @@ function drawWaveform(buf, hdr){
 
 // ── Create WAV backup ─────────────────────────────────
 async function createWavBackup(){
-  if(!wavState.baseArrayBuffer){ setSt('wavBkpSt','טען קובץ WAV בסיס תחילה.','err'); return; }
+  if(!wavState.baseArrayBuffer){ setSt('wavBkpSt','\u05d8\u05e2\u05df \u05e7\u05d5\u05d1\u05e5 WAV \u05d1\u05e1\u05d9\u05e1 \u05ea\u05d7\u05d9\u05dc\u05d4.','err'); return; }
 
   const prog = $('wavBkpProgress');
   const fill = $('wavBkpProgressFill');
   prog.classList.add('on'); fill.style.width = '10%';
-  setSt('wavBkpSt','מכין נתונים...','warn');
+  setSt('wavBkpSt','\u05de\u05db\u05d9\u05df \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd...','warn');
 
   const files = [];
 
   try {
     if(wavState.bkpType === 'key' || wavState.bkpType === 'both'){
-      if(!S.encK){ setSt('wavBkpSt','אין Key image טעון באפליקציה.','err'); prog.classList.remove('on'); return; }
+      if(!S.encK){ setSt('wavBkpSt','\u05d0\u05d9\u05df Key image \u05d8\u05e2\u05d5\u05df \u05d1\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4.','err'); prog.classList.remove('on'); return; }
       const pngBytes = await canvasToPngBytes('encKCv');
       files.push({ name:'illusion_key.png', mime:'image/png', data: pngBytes });
     }
     fill.style.width = '40%';
 
     if(wavState.bkpType === 'carrier' || wavState.bkpType === 'both'){
-      if(!S.encC){ setSt('wavBkpSt','אין Carrier image טעון באפליקציה.','err'); prog.classList.remove('on'); return; }
+      if(!S.encC){ setSt('wavBkpSt','\u05d0\u05d9\u05df Carrier image \u05d8\u05e2\u05d5\u05df \u05d1\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4.','err'); prog.classList.remove('on'); return; }
       const pngBytes = await canvasToPngBytes('encCCv');
       files.push({ name:'illusion_carrier.png', mime:'image/png', data: pngBytes });
     }
@@ -2295,8 +2303,8 @@ async function createWavBackup(){
     const cap = wavCapBytes(wavState.baseDataLength);
 
     if(payload.length > cap){
-      setSt('wavBkpSt', `הקבצים גדולים מדי! נדרש: ${fmtSz(payload.length)}, קיבולת: ${fmtSz(cap)}.
-נסה WAV ארוך יותר.`, 'err');
+      setSt('wavBkpSt', `\u05d4\u05e7\u05d1\u05e6\u05d9\u05dd \u05d2\u05d3\u05d5\u05dc\u05d9\u05dd \u05de\u05d3\u05d9! \u05e0\u05d3\u05e8\u05e9: ${fmtSz(payload.length)}, \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: ${fmtSz(cap)}.
+\u05e0\u05e1\u05d4 WAV \u05d0\u05e8\u05d5\u05da \u05d9\u05d5\u05ea\u05e8.`, 'err');
       prog.classList.remove('on'); return;
     }
 
@@ -2309,17 +2317,17 @@ async function createWavBackup(){
 
     const totalSize = files.reduce((a,f)=>a+f.data.length,0);
     setSt('wavBkpSt',
-      `✓ גיבוי WAV נוצר בהצלחה!
-קבצים: ${files.map(f=>f.name).join(', ')}
-גודל נתונים: ${fmtSz(totalSize)} → ${fmtSz(payload.length)} (JSON)
-נקודת גיבוי: ${new Date().toLocaleString('he-IL')}`,
+      `✓ \u05d2\u05d9\u05d1\u05d5\u05d9 WAV \u05e0\u05d5\u05e6\u05e8 \u05d1\u05d4\u05e6\u05dc\u05d7\u05d4!
+\u05e7\u05d1\u05e6\u05d9\u05dd: ${files.map(f=>f.name).join(', ')}
+\u05d2\u05d5\u05d3\u05dc \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd: ${fmtSz(totalSize)} → ${fmtSz(payload.length)} (JSON)
+\u05e0\u05e7\u05d5\u05d3\u05ea \u05d2\u05d9\u05d1\u05d5\u05d9: ${new Date().toLocaleString('he-IL')}`,
       'ok'
     );
     $('wavDlBtn').disabled = false;
     $('wavDlBtn').style.display = 'block';
 
   } catch(err){
-    setSt('wavBkpSt','שגיאה: '+err.message,'err');
+    setSt('wavBkpSt','\u05e9\u05d2\u05d9\u05d0\u05d4: '+err.message,'err');
   }
   setTimeout(()=>prog.classList.remove('on'), 1200);
 }
@@ -2353,14 +2361,14 @@ function loadWavRestore(inp){
           $('wavMetaSize').textContent = fmtSz(bytes.length);
           $('wavMetaDate').textContent = p.date ? new Date(p.date).toLocaleString('he-IL') : '—';
           $('wavMetaVer').textContent = 'IllusionEffect v'+p.v;
-          setSt('wavRestoreSt','✓ נתוני גיבוי זוהו. לחץ שחזר.','ok');
+          setSt('wavRestoreSt','✓ \u05e0\u05ea\u05d5\u05e0\u05d9 \u05d2\u05d9\u05d1\u05d5\u05d9 \u05d6\u05d5\u05d4\u05d5. \u05dc\u05d7\u05e5 \u05e9\u05d7\u05d6\u05e8.','ok');
           $('wavRestoreBtn').disabled = false;
           return;
         }
       }
-      setSt('wavRestoreSt','לא נמצאו נתוני גיבוי בקובץ WAV זה.','err');
+      setSt('wavRestoreSt','\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0\u05d5 \u05e0\u05ea\u05d5\u05e0\u05d9 \u05d2\u05d9\u05d1\u05d5\u05d9 \u05d1\u05e7\u05d5\u05d1\u05e5 WAV \u05d6\u05d4.','err');
     } catch(err){
-      setSt('wavRestoreSt','שגיאה בניתוח WAV: '+err.message,'err');
+      setSt('wavRestoreSt','\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d1\u05e0\u05d9\u05ea\u05d5\u05d7 WAV: '+err.message,'err');
     }
   };
   reader.readAsArrayBuffer(f);
@@ -2368,20 +2376,20 @@ function loadWavRestore(inp){
 
 // ── Restore from WAV ──────────────────────────────────
 async function restoreFromWav(){
-  if(!wavState.restoreArrayBuffer){ setSt('wavRestoreSt','טען קובץ WAV תחילה.','err'); return; }
+  if(!wavState.restoreArrayBuffer){ setSt('wavRestoreSt','\u05d8\u05e2\u05df \u05e7\u05d5\u05d1\u05e5 WAV \u05ea\u05d7\u05d9\u05dc\u05d4.','err'); return; }
 
   const prog = $('wavRestoreProgress');
   prog.classList.add('on');
   $('wavRestoreProgressFill').style.width = '20%';
-  setSt('wavRestoreSt','מחלץ נתונים...','warn');
+  setSt('wavRestoreSt','\u05de\u05d7\u05dc\u05e5 \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd...','warn');
 
   try {
     const bytes = wavExtract(wavState.restoreArrayBuffer);
-    if(!bytes){ setSt('wavRestoreSt','לא נמצאו נתונים מוטמעים.','err'); prog.classList.remove('on'); return; }
+    if(!bytes){ setSt('wavRestoreSt','\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0\u05d5 \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05de\u05d5\u05d8\u05de\u05e2\u05d9\u05dd.','err'); prog.classList.remove('on'); return; }
 
     $('wavRestoreProgressFill').style.width = '60%';
     const p = parseWavPayload(bytes);
-    if(!p||!p.files){ setSt('wavRestoreSt','פורמט גיבוי לא תקין.','err'); prog.classList.remove('on'); return; }
+    if(!p||!p.files){ setSt('wavRestoreSt','\u05e4\u05d5\u05e8\u05de\u05d8 \u05d2\u05d9\u05d1\u05d5\u05d9 \u05dc\u05d0 \u05ea\u05e7\u05d9\u05df.','err'); prog.classList.remove('on'); return; }
 
     $('wavRestoreProgressFill').style.width = '90%';
 
@@ -2407,20 +2415,20 @@ async function restoreFromWav(){
         </div>
         <div style="display:flex;gap:.4rem">
           <button class="btn ${isKey?'btn-rust':'btn-gold'}" onclick="applyRestoredFile('${file.name}','${file.mime}',${JSON.stringify(Array.from(fileBytes))})" style="margin-bottom:0;padding:.4rem .8rem;width:auto">
-            <span>טען לאפליקציה</span>
+            <span>\u05d8\u05e2\u05df \u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4</span>
           </button>
           <a href="${url}" download="${file.name}" class="btn btn-sky" style="margin-bottom:0;padding:.4rem .8rem;width:auto;text-decoration:none;display:flex;align-items:center;justify-content:center">
-            <span>הורד PNG</span>
+            <span>\u05d4\u05d5\u05e8\u05d3 PNG</span>
           </a>
         </div>
       `;
       rows.appendChild(row);
     }
 
-    setSt('wavRestoreSt', `✓ שוחזרו ${p.files.length} קבצים מגיבוי ${new Date(p.date).toLocaleString('he-IL')}`, 'ok');
+    setSt('wavRestoreSt', `✓ \u05e9\u05d5\u05d7\u05d6\u05e8\u05d5 ${p.files.length} \u05e7\u05d1\u05e6\u05d9\u05dd \u05de\u05d2\u05d9\u05d1\u05d5\u05d9 ${new Date(p.date).toLocaleString('he-IL')}`, 'ok');
 
   } catch(err){
-    setSt('wavRestoreSt','שגיאה בשחזור: '+err.message,'err');
+    setSt('wavRestoreSt','\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d1\u05e9\u05d7\u05d6\u05d5\u05e8: '+err.message,'err');
   }
   setTimeout(()=>prog.classList.remove('on'),1200);
 }
@@ -2444,9 +2452,9 @@ function applyRestoredFile(name, mime, dataArr){
       renderImgData(id,'decKCv');
       $('encKPrev').classList.add('on');
       $('decKPrev').classList.add('on');
-      $('encKMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
-      $('decKMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
-      $('keyBadge').textContent = 'KEY: שוחזר מ-WAV ✦';
+      $('encKMeta').textContent = img.width+'x'+img.height+' · \u05e9\u05d5\u05d7\u05d6\u05e8 \u05de-WAV';
+      $('decKMeta').textContent = img.width+'x'+img.height+' · \u05e9\u05d5\u05d7\u05d6\u05e8 \u05de-WAV';
+      $('keyBadge').textContent = 'KEY: \u05e9\u05d5\u05d7\u05d6\u05e8 \u05de-WAV ✦';
       $('keyBadge').className = 'key-badge ok';
       // Check for RL data
       const b = lsbExtract(id);
@@ -2456,14 +2464,14 @@ function applyRestoredFile(name, mime, dataArr){
       renderImgData(id,'decCCv');
       $('encCPrev').classList.add('on');
       $('decCPrev').classList.add('on');
-      $('encCMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
-      $('decCMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
+      $('encCMeta').textContent = img.width+'x'+img.height+' · \u05e9\u05d5\u05d7\u05d6\u05e8 \u05de-WAV';
+      $('decCMeta').textContent = img.width+'x'+img.height+' · \u05e9\u05d5\u05d7\u05d6\u05e8 \u05de-WAV';
       updateCap();
     }
 
     $('encBtn').disabled = !(S.encC && S.encK);
     checkDecRdy();
-    setSt('wavRestoreSt', `✓ ${name} הוטען לאפליקציה בהצלחה!`, 'ok');
+    setSt('wavRestoreSt', `✓ ${name} \u05d4\u05d5\u05d8\u05e2\u05df \u05dc\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4 \u05d1\u05d4\u05e6\u05dc\u05d7\u05d4!`, 'ok');
   };
   img.src = url;
 }
@@ -2484,7 +2492,7 @@ function unlockMigration(kp){
 
 function openKeyMigrate(){
   if(!S.migrationUnlocked){
-    setSt('decSt','יש לבצע פענוח מוצלח תחילה כדי לאמת את הזכאות להחלפת המפתח.','err');
+    setSt('decSt','\u05d9\u05e9 \u05dc\u05d1\u05e6\u05e2 \u05e4\u05e2\u05e0\u05d5\u05d7 \u05de\u05d5\u05e6\u05dc\u05d7 \u05ea\u05d7\u05d9\u05dc\u05d4 \u05db\u05d3\u05d9 \u05dc\u05d0\u05de\u05ea \u05d0\u05ea \u05d4\u05d6\u05db\u05d0\u05d5\u05ea \u05dc\u05d4\u05d7\u05dc\u05e4\u05ea \u05d4\u05de\u05e4\u05ea\u05d7.','err');
     showPanel('pDecode',document.querySelectorAll('.nav-btn')[1]);
     return;
   }
@@ -2498,7 +2506,7 @@ function openKeyMigrate(){
   setSt('kmSt','','');
   $('kmStep2').className='km-step active';
   $('kmStep3').className='km-step';
-  $('kmVerifiedTxt').textContent='פענוח מאומת · '+new Date().toLocaleTimeString('he-IL');
+  $('kmVerifiedTxt').textContent='\u05e4\u05e2\u05e0\u05d5\u05d7 \u05de\u05d0\u05d5\u05de\u05ea · '+new Date().toLocaleTimeString('he-IL');
   $('keyMigrateModal').classList.add('on');
 }
 
@@ -2518,7 +2526,7 @@ function loadNewKeyImg(inp){
     const cap=lsbCap(id);
     const kpStr=JSON.stringify(S.migrationKP||{});
     const needed=new TextEncoder().encode(kpStr).length;
-    $('kmNewMeta').textContent=id.width+'x'+id.height+' · קיבולת: '+fmtSz(cap)+' · נדרש: '+fmtSz(needed);
+    $('kmNewMeta').textContent=id.width+'x'+id.height+' · \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: '+fmtSz(cap)+' · \u05e0\u05d3\u05e8\u05e9: '+fmtSz(needed);
 
     $('kmStep2').className='km-step done';
     $('kmStep3').className='km-step active';
@@ -2526,7 +2534,7 @@ function loadNewKeyImg(inp){
     const warn=$('kmWarning');
     if(cap<needed){
       warn.style.display='block';
-      warn.textContent='⚠ התמונה קטנה מדי! קיבולת: '+fmtSz(cap)+', נדרש: '+fmtSz(needed)+'. בחר תמונה גדולה יותר.';
+      warn.textContent='⚠ \u05d4\u05ea\u05de\u05d5\u05e0\u05d4 \u05e7\u05d8\u05e0\u05d4 \u05de\u05d3\u05d9! \u05e7\u05d9\u05d1\u05d5\u05dc\u05ea: '+fmtSz(cap)+', \u05e0\u05d3\u05e8\u05e9: '+fmtSz(needed)+'. \u05d1\u05d7\u05e8 \u05ea\u05de\u05d5\u05e0\u05d4 \u05d2\u05d3\u05d5\u05dc\u05d4 \u05d9\u05d5\u05ea\u05e8.';
       $('kmMigrateBtn').disabled=true;
     } else {
       warn.style.display='none';
@@ -2536,9 +2544,9 @@ function loadNewKeyImg(inp){
 }
 
 function executeMigration(){
-  if(!S.newKeyImgData||!S.migrationKP){setSt('kmSt','שגיאה פנימית — נסה שוב.','err');return;}
+  if(!S.newKeyImgData||!S.migrationKP){setSt('kmSt','\u05e9\u05d2\u05d9\u05d0\u05d4 \u05e4\u05e0\u05d9\u05de\u05d9\u05ea — \u05e0\u05e1\u05d4 \u05e9\u05d5\u05d1.','err');return;}
   const kpBytes=new TextEncoder().encode(JSON.stringify(S.migrationKP));
-  if(kpBytes.length>lsbCap(S.newKeyImgData)){setSt('kmSt','תמונה קטנה מדי.','err');return;}
+  if(kpBytes.length>lsbCap(S.newKeyImgData)){setSt('kmSt','\u05ea\u05de\u05d5\u05e0\u05d4 \u05e7\u05d8\u05e0\u05d4 \u05de\u05d3\u05d9.','err');return;}
 
   const newPx=lsbEmbed(S.newKeyImgData,kpBytes);
   const cv=$('kmNewKeyCv');
@@ -2557,23 +2565,23 @@ function executeMigration(){
     c.getContext('2d').putImageData(S.decK,0,0);
   });
   $('decKPrev').classList.add('on');
-  $('decKMeta').textContent=cv.width+'x'+cv.height+' · Key מועבר ✦';
+  $('decKMeta').textContent=cv.width+'x'+cv.height+' · Key \u05de\u05d5\u05e2\u05d1\u05e8 ✦';
   $('encKPrev').classList.add('on');
-  $('encKMeta').textContent=cv.width+'x'+cv.height+' · Key מועבר ✦';
-  $('keyBadge').textContent='KEY: מועבר ✦';
+  $('encKMeta').textContent=cv.width+'x'+cv.height+' · Key \u05de\u05d5\u05e2\u05d1\u05e8 ✦';
+  $('keyBadge').textContent='KEY: \u05de\u05d5\u05e2\u05d1\u05e8 ✦';
   $('keyBadge').className='key-badge ok';
 
   $('kmStep3').className='km-step done';
   $('kmMigrateBtn').disabled=true;
-  setSt('kmSt','✓ המפתח הועבר לתמונה החדשה!
-הורד את ה-Key החדש.','ok');
+  setSt('kmSt','✓ \u05d4\u05de\u05e4\u05ea\u05d7 \u05d4\u05d5\u05e2\u05d1\u05e8 \u05dc\u05ea\u05de\u05d5\u05e0\u05d4 \u05d4\u05d7\u05d3\u05e9\u05d4!
+\u05d4\u05d5\u05e8\u05d3 \u05d0\u05ea \u05d4-Key \u05d4\u05d7\u05d3\u05e9.','ok');
 
   // Add download button once
   if(!$('keyMigrateModal').querySelector('.km-dl-row')){
     const row=document.createElement('div');
     row.className='km-dl-row';
     row.style.marginTop='.5rem';
-    row.innerHTML='<button class="btn btn-sky" onclick="dlNewKey()" style="margin-bottom:0"><span>Download New Key PNG</span></button>';
+    row.innerHTML='<button class="btn btn-sky" onclick="dlNewKey()" style="margin-bottom:0"><span>\u05d4\u05d5\u05e8\u05d3 Key \u05d7\u05d3\u05e9 PNG</span></button>';
     $('kmSt').insertAdjacentElement('afterend',row);
   }
 }
