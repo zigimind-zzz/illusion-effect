@@ -96,7 +96,7 @@ body{cursor:crosshair;position:relative}
   transition:border-color .3s;
 }
 .i-slot-frame:hover{border-color:var(--sand)}
-.i-slot-frame input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5}
+.i-slot-frame input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10;pointer-events:all}
 
 .i-slot-inner{
   width:100%;height:100%;
@@ -125,6 +125,7 @@ body{cursor:crosshair;position:relative}
 .i-slot-frame canvas{
   position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;
+  pointer-events:none;
   animation:daliMelt 10s ease-in-out infinite;
   display:none;
 }
@@ -629,7 +630,7 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
     <!-- Slot 1 -->
     <div class="i-slot">
       <div class="i-slot-frame" id="slot1Frame">
-        <input type="file" accept="image/*" id="slot1File" onchange="loadSlot(1,this)">
+        <input type="file" accept="image/*" id="slot1File" onchange="event.stopPropagation();loadSlot(1,this)">
         <canvas id="slot1Canvas"></canvas>
         <div class="i-slot-inner" id="slot1Inner">
           <div class="i-slot-num" style="font-size:clamp(1rem,2.5vw,2rem);opacity:.5">IMAGE ONE</div>
@@ -645,7 +646,7 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
     <!-- Slot 2 -->
     <div class="i-slot">
       <div class="i-slot-frame" id="slot2Frame">
-        <input type="file" accept="image/*" id="slot2File" onchange="loadSlot(2,this)">
+        <input type="file" accept="image/*" id="slot2File" onchange="event.stopPropagation();loadSlot(2,this)">
         <canvas id="slot2Canvas"></canvas>
         <div class="i-slot-inner" id="slot2Inner">
           <div class="i-slot-num" style="font-size:clamp(1rem,2.5vw,2rem);opacity:.5">IMAGE TWO</div>
@@ -1378,27 +1379,25 @@ const S={
 // INTRO — SLOT LOADING
 // ══════════════════════════════════════════════════════
 function loadSlot(n,inp){
-  alert('loadSlot called! files: '+(inp.files?inp.files.length:0));
-  const f=inp.files[0]; 
-  if(!f){alert('No file selected!');return;}
-  alert('File: '+f.name+' ('+f.size+' bytes)');
-  const url=URL.createObjectURL(f);
-  const img=new Image();
-  img.onload=()=>{
-    const cv=$(n===1?'slot1Canvas':'slot2Canvas');
-    cv.width=img.naturalWidth||300;cv.height=img.naturalHeight||300;
-    const ctx=cv.getContext('2d');
-    ctx.drawImage(img,0,0);
-    const id=ctx.getImageData(0,0,cv.width,cv.height);
-    if(n===1){S.slot1=id;S.slot1URL=url;}
-    else{S.slot2=id;S.slot2URL=url;}
-    cv.classList.add('loaded');
-    $(`slot${n}Inner`).style.opacity='0';
-    checkEnterReady();
-    URL.revokeObjectURL(url);
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cv=$(n===1?'slot1Canvas':'slot2Canvas');
+      cv.width=img.naturalWidth||img.width||300;cv.height=img.naturalHeight||img.height||300;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const id=ctx.getImageData(0,0,img.width,img.height);
+      if(n===1){S.slot1=id;S.slot1URL=r.result;}
+      else{S.slot2=id;S.slot2URL=r.result;}
+      cv.classList.add('loaded');
+      $('slot'+n+'Inner').style.opacity='0';
+      checkEnterReady();
+    };
+    img.src=e.target.result;
   };
-  img.onerror=()=>{alert('Error loading image. Please try again.');};
-  img.src=url;
+  r.readAsDataURL(f);
 }
 
 function checkEnterReady(){
@@ -1599,7 +1598,7 @@ function loadImgFile(file,cb){
   r.onload=e=>{
     const img=new Image();
     img.onload=()=>{
-      const cv=$('wCv');cv.width=img.width;cv.height=img.height;
+      const cv=$('wCv');cv.width=img.naturalWidth||img.width||300;cv.height=img.naturalHeight||img.height||300;
       cv.getContext('2d').drawImage(img,0,0);
       cb(cv.getContext('2d').getImageData(0,0,img.width,img.height));
     };
