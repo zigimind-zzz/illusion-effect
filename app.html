@@ -590,6 +590,18 @@ textarea:focus{border-color:rgba(201,168,76,.5)}
 </style>
 </head>
 <body>
+<style>
+#dbg{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.9);color:#0f0;font-family:monospace;font-size:11px;padding:8px;z-index:99999;max-height:150px;overflow-y:auto;display:none}
+</style>
+<div id="dbg"></div>
+<script>
+function dbg(msg){
+  var el=document.getElementById('dbg');
+  el.style.display='block';
+  el.innerHTML+=msg+'<br>';
+  el.scrollTop=el.scrollHeight;
+}
+</script>
 
 <!-- ══════════ DALI BACKGROUND ══════════ -->
 <canvas id="daliCanvas"></canvas>
@@ -1379,7 +1391,9 @@ const S={
 // INTRO — SLOT LOADING
 // ══════════════════════════════════════════════════════
 function loadSlot(n,inp){
-  const f=inp.files[0]; if(!f) return;
+  dbg('loadSlot n='+n+' files='+inp.files.length);
+  const f=inp.files[0]; if(!f){dbg('NO FILE');return;}
+  dbg('file: '+f.name+' '+f.size);
   const r=new FileReader();
   r.onload=e=>{
     const img=new Image();
@@ -1388,6 +1402,7 @@ function loadSlot(n,inp){
       cv.width=img.naturalWidth||img.width||300;cv.height=img.naturalHeight||img.height||300;
       const ctx=cv.getContext('2d');
       ctx.drawImage(img,0,0);
+      dbg('img loaded '+img.width+'x'+img.height);
       const id=ctx.getImageData(0,0,img.width,img.height);
       if(n===1){S.slot1=id;S.slot1URL=r.result;}
       else{S.slot2=id;S.slot2URL=r.result;}
