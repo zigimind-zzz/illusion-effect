@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Illusion Effect</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --sand:#e8d5a3;
+  --rust:#8b2500;
+  --gold:#c9a84c;
+  --shadow:#1a0a00;
+  --cream:#f5ead0;
+  --sky:#3d6b8a;
+  --ink:#0d0705;
+  --melt:#d4712b;
+  --mono:'Share Tech Mono',monospace;
+  --serif:'IM Fell English',serif;
+  --display:'Cinzel Decorative',serif;
+}
+
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink)}
+body{cursor:crosshair;position:relative}
+
+/* ══════════ DALI SVG BACKGROUND ══════════ */
+#daliCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+
+/* ══════════ INTRO SCREEN ══════════ */
+#intro{
+  position:fixed;inset:0;z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:transparent;
+  pointer-events:all;
+}
+
+.intro-title{
+  font-family:var(--display);
+  font-size:clamp(2rem,7vw,5.5rem);
+  color:var(--sand);
+  letter-spacing:.12em;
+  text-align:center;
+  text-shadow:0 0 60px rgba(201,168,76,.4), 2px 4px 0 var(--rust);
+  animation:titleMelt 8s ease-in-out infinite;
+  transform-origin:center bottom;
+  line-height:1.1;
+  margin-bottom:.3em;
+}
+
+.intro-sub{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:clamp(.8rem,2vw,1.2rem);
+  color:var(--gold);
+  opacity:.8;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  animation:fadeWave 6s ease-in-out infinite;
+  margin-bottom:3rem;
+}
+
+@keyframes titleMelt{
+  0%,100%{transform:scaleX(1) scaleY(1) skewX(0deg)}
+  20%{transform:scaleX(1.04) scaleY(.97) skewX(1deg)}
+  40%{transform:scaleX(.97) scaleY(1.03) skewX(-1.5deg)}
+  60%{transform:scaleX(1.02) scaleY(.98) skewX(.8deg)}
+  80%{transform:scaleX(.98) scaleY(1.02) skewX(-0.5deg)}
+}
+@keyframes fadeWave{
+  0%,100%{opacity:.6;letter-spacing:.3em}
+  50%{opacity:1;letter-spacing:.38em}
+}
+
+/* The two intro image slots */
+.intro-slots{
+  display:flex;gap:4rem;align-items:flex-end;
+  margin-bottom:2.5rem;
+}
+
+.i-slot{
+  display:flex;flex-direction:column;align-items:center;gap:.8rem;
+  position:relative;
+}
+
+.i-slot-frame{
+  width:clamp(120px,18vw,220px);
+  height:clamp(140px,22vw,270px);
+  border:1px solid var(--gold);
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  background:rgba(26,10,0,.6);
+  transition:border-color .3s;
+}
+.i-slot-frame:hover{border-color:var(--sand)}
+.i-slot-frame input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5}
+
+.i-slot-inner{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.5rem;padding:.8rem;
+}
+
+.i-slot-num{
+  font-family:var(--display);
+  font-size:clamp(1.5rem,3vw,2.5rem);
+  color:var(--gold);
+  opacity:.35;
+  line-height:1;
+}
+
+.i-slot-label{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:.75rem;
+  color:var(--sand);
+  opacity:.6;
+  text-align:center;
+  letter-spacing:.08em;
+}
+
+.i-slot-frame canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;
+  animation:daliMelt 10s ease-in-out infinite;
+  display:none;
+}
+.i-slot-frame canvas.loaded{display:block}
+
+@keyframes daliImgMorph{
+  0%,100%{
+    transform:translate(-50%,-50%) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg);
+    filter:sepia(1) hue-rotate(10deg) saturate(1.4) brightness(1);
+  }
+  10%{transform:translate(-50%,-50%) scaleX(1.18) scaleY(.82) skewX(4deg) skewY(1deg);filter:sepia(1) hue-rotate(20deg) saturate(1.8) brightness(1.1)}
+  22%{transform:translate(-50%,-50%) scaleX(.85) scaleY(1.22) skewX(-6deg) skewY(-2deg);filter:sepia(1) hue-rotate(0deg) saturate(1.2) brightness(.9)}
+  35%{transform:translate(-50%,-50%) scaleX(1.12) scaleY(.91) skewX(3deg) skewY(3deg);filter:sepia(1) hue-rotate(30deg) saturate(2) brightness(1.15)}
+  50%{transform:translate(-50%,-50%) scaleX(.88) scaleY(1.15) skewX(-4deg) skewY(-1deg);filter:sepia(1) hue-rotate(-10deg) saturate(1.1) brightness(.85)}
+  65%{transform:translate(-50%,-50%) scaleX(1.2) scaleY(.8) skewX(7deg) skewY(2deg);filter:sepia(1) hue-rotate(40deg) saturate(1.9) brightness(1.2)}
+  80%{transform:translate(-50%,-50%) scaleX(.92) scaleY(1.08) skewX(-2deg) skewY(-3deg);filter:sepia(1) hue-rotate(5deg) saturate(1.3) brightness(.95)}
+}
+@keyframes daliMelt{
+  0%,100%{
+    clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+    transform:scaleX(1) scaleY(1);
+    filter:hue-rotate(0deg) saturate(1.1);
+  }
+  15%{clip-path:polygon(0 0,102% 1%,101% 100%,0 99%);transform:scaleX(1.02) scaleY(.98);filter:hue-rotate(5deg) saturate(1.2)}
+  30%{clip-path:polygon(1% 0,100% 0,99% 100%,0 101%);transform:scaleX(.98) scaleY(1.02);filter:hue-rotate(-3deg) saturate(.95)}
+  45%{clip-path:polygon(0 1%,101% 0,100% 99%,0 100%);transform:scaleX(1.01) scaleY(.99) skewX(.5deg)}
+  60%{clip-path:polygon(0 0,100% 0,102% 100%,0 100%);transform:scaleX(.99) scaleY(1.01) skewX(-.3deg);filter:hue-rotate(8deg)}
+  75%{clip-path:polygon(0 0,100% 1%,100% 100%,1% 100%);transform:scaleX(1.015) scaleY(.985)}
+}
+
+.i-slot-tag{
+  font-family:var(--mono);
+  font-size:.58rem;
+  color:var(--gold);
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  opacity:.7;
+}
+
+/* Enter btn */
+.enter-btn{
+  font-family:var(--display);
+  font-size:clamp(.75rem,1.5vw,1rem);
+  color:var(--ink);
+  background:linear-gradient(135deg,var(--gold),var(--melt));
+  border:none;
+  padding:.9rem 3rem;
+  letter-spacing:.25em;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:all .3s;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  animation:btnPulse 4s ease-in-out infinite;
+  opacity:.4;
+  pointer-events:all;
+}
+.enter-btn.ready{opacity:1;animation:btnPulse 4s ease-in-out infinite,fadeIn .4s ease forwards}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 20px rgba(201,168,76,.3)}50%{box-shadow:0 0 40px rgba(201,168,76,.6)}}
+@keyframes fadeIn{from{opacity:.4}to{opacity:1}}
+.enter-btn:hover{background:linear-gradient(135deg,var(--sand),var(--gold));transform:scaleX(1.03) scaleY(.97)}
+
+/* mismatch dali effect overlay */
+#mismatchOverlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  pointer-events:none;
+}
+#mismatchOverlay.active{display:block}
+
+/* ══════════ MAIN APP ══════════ */
+#app{
+  display:none;position:fixed;inset:0;z-index:50;
+  flex-direction:column;overflow:hidden;
+}
+#app.on{display:flex}
+
+/* top bar */
+.topbar{
+  height:52px;
+  background:rgba(13,7,5,.92);
+  border-bottom:1px solid rgba(201,168,76,.2);
+  display:flex;align-items:center;
+  padding:0 1.5rem;gap:1.5rem;
+  backdrop-filter:blur(8px);
+  flex-shrink:0;
+}
+.app-title{
+  font-family:var(--display);
+  font-size:.9rem;
+  color:var(--gold);
+  letter-spacing:.2em;
+}
+.key-badge{
+  font-family:var(--mono);
+  font-size:.58rem;
+  padding:.2rem .6rem;
+  background:rgba(139,37,0,.3);
+  border:1px solid rgba(139,37,0,.5);
+  color:var(--melt);
+  letter-spacing:.12em;
+}
+.key-badge.ok{background:rgba(0,80,40,.3);border-color:rgba(0,160,80,.4);color:#00d46a}
+
+.topbar-right{margin-right:auto;display:flex;align-items:center;gap:.8rem}
+.meter{display:flex;gap:3px}
+.m-d{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.08);transition:all .3s}
+.m-d.lit{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+.m-d.red{background:#ef4444;box-shadow:0 0 8px #ef4444}
+.meter-lbl{font-family:var(--mono);font-size:.55rem;color:rgba(201,168,76,.5);letter-spacing:.1em}
+
+.nav-btn{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;
+  background:none;border:1px solid rgba(201,168,76,.2);
+  color:rgba(201,168,76,.5);padding:.3rem .8rem;cursor:pointer;
+  transition:all .2s;text-transform:uppercase;
+}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06)}
+
+/* ══════════ CONTENT AREA ══════════ */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;background:rgba(13,7,5,.85)}
+
+/* ── PANELS ── */
+.panel{display:none;height:100%}
+.panel.active{display:flex}
+
+/* ENCODE PANEL */
+#pEncode{flex-direction:column}
+.enc-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  height:100%;
+}
+.ec{padding:1.5rem;border-left:1px solid rgba(201,168,76,.1);overflow-y:auto}
+.ec:last-child{border-left:none}
+
+/* DECODE PANEL */
+#pDecode{flex-direction:column}
+.dec-grid{display:grid;grid-template-columns:1fr 1fr;height:100%}
+.dc{padding:1.5rem;border-left:1px solid rgba(201,168,76,.1);overflow-y:auto}
+.dc:last-child{border-left:none}
+
+/* VAULT PANEL */
+#pVault{flex-direction:column;padding:1.5rem}
+
+/* ══════════ SHARED UI ══════════ */
+.sec-hdr{
+  font-family:var(--display);font-size:.8rem;letter-spacing:.2em;
+  margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;
+}
+.sec-pip{width:5px;height:5px;border-radius:50%}
+
+.lbl{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(201,168,76,.4);display:block;margin-bottom:.3rem}
+
+.dz{
+  border:1px dashed rgba(201,168,76,.25);padding:1.2rem .8rem;
+  text-align:center;cursor:pointer;transition:all .25s;
+  position:relative;background:rgba(255,255,255,.01);margin-bottom:.7rem;
+}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz:hover{border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.03)}
+.dz-icon{font-size:1.3rem;opacity:.2;margin-bottom:.3rem}
+.dz-txt{font-family:var(--mono);font-size:.55rem;color:rgba(201,168,76,.35);letter-spacing:.12em;text-transform:uppercase}
+
+.prev-wrap{display:none;margin-bottom:.7rem;position:relative}
+.prev-wrap.on{display:block}
+.prev-wrap canvas{width:100%;max-height:120px;object-fit:contain;display:block;
+  border:1px solid rgba(201,168,76,.15);animation:daliMelt 12s ease-in-out infinite}
+.img-meta{font-family:var(--mono);font-size:.52rem;color:rgba(201,168,76,.4);margin-top:.25rem}
+
+textarea{
+  width:100%;background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.2);
+  color:var(--sand);font-family:var(--mono);font-size:.75rem;
+  padding:.7rem;resize:vertical;min-height:75px;outline:none;line-height:1.65;
+  direction:rtl;transition:border-color .2s;
+}
+textarea:focus{border-color:rgba(201,168,76,.5)}
+
+.input-field{
+  width:100%;background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.2);
+  color:var(--sand);font-family:var(--mono);font-size:.75rem;
+  padding:.5rem .7rem;outline:none;transition:border-color .2s;
+}
+.input-field:focus{border-color:rgba(201,168,76,.5)}
+
+/* capacity */
+.cap-bar{height:2px;background:rgba(255,255,255,.05);margin:.3rem 0;border-radius:1px;overflow:hidden}
+.cap-fill{height:100%;background:var(--gold);transition:width .4s,background .4s;border-radius:1px}
+.cap-txt{font-family:var(--mono);font-size:.52rem;color:rgba(201,168,76,.4);margin-bottom:.7rem}
+
+/* payload type */
+.pt-row{display:flex;gap:.3rem;margin-bottom:.8rem}
+.pt-b{flex:1;padding:.45rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;
+  text-transform:uppercase;background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.2);
+  color:rgba(201,168,76,.4);cursor:pointer;transition:all .2s}
+.pt-b:hover{border-color:rgba(201,168,76,.5);color:rgba(201,168,76,.8)}
+.pt-b.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07)}
+
+/* RL mini */
+.rl-mini{background:rgba(139,37,0,.1);border:1px solid rgba(139,37,0,.25);padding:.8rem;margin-bottom:.8rem}
+.rl-title-s{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--melt);margin-bottom:.6rem}
+.rl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.rl-row:last-child{margin-bottom:0}
+.rl-l{font-family:var(--mono);font-size:.55rem;color:rgba(232,213,163,.4)}
+.rl-ctrl{display:flex;align-items:center;gap:.3rem}
+.rl-v{font-family:var(--display);font-size:.9rem;color:var(--melt);min-width:26px;text-align:center;direction:ltr}
+.rl-b{background:none;border:1px solid rgba(139,37,0,.3);color:rgba(212,113,43,.5);
+  width:18px;height:18px;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rl-b:hover{border-color:var(--melt);color:var(--melt)}
+
+/* buttons */
+.btn{
+  width:100%;padding:.7rem;font-family:var(--display);font-size:.8rem;
+  letter-spacing:.2em;border:1px solid;background:transparent;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;margin-bottom:.4rem;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+}
+.btn::before{content:'';position:absolute;inset:0;transform:translateX(101%);transition:transform .2s}
+.btn:hover::before{transform:translateX(0)}
+.btn span{position:relative;z-index:1}
+.btn:disabled{opacity:.2;cursor:not-allowed}
+.btn:disabled::before{display:none}
+.btn-gold{border-color:var(--gold);color:var(--gold)}
+.btn-gold::before{background:var(--gold)}
+.btn-gold:not(:disabled):hover{color:var(--ink)}
+.btn-rust{border-color:var(--melt);color:var(--melt)}
+.btn-rust::before{background:var(--melt)}
+.btn-rust:not(:disabled):hover{color:var(--ink)}
+.btn-sky{border-color:var(--sky);color:#7ab3cc}
+.btn-sky::before{background:var(--sky)}
+.btn-sky:not(:disabled):hover{color:var(--cream)}
+
+/* status */
+.st{padding:.55rem .7rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;
+  line-height:1.8;display:none;border-right:2px solid;
+  background:rgba(255,255,255,.02);margin-bottom:.5rem;white-space:pre-line}
+.st.on{display:block}
+.st.ok{border-color:#00d46a;color:#00d46a}
+.st.err{border-color:#ef4444;color:#ef4444}
+.st.warn{border-color:var(--melt);color:var(--melt)}
+
+/* meta box */
+.meta-box{background:rgba(139,37,0,.08);border:1px solid rgba(139,37,0,.2);
+  padding:.7rem;margin-bottom:.7rem;display:none}
+.meta-box.on{display:block}
+.meta-title-s{font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--melt);margin-bottom:.5rem}
+.meta-row{display:flex;justify-content:space-between;font-family:var(--mono);
+  font-size:.55rem;margin-bottom:.2rem;direction:ltr}
+.meta-k{color:rgba(232,213,163,.35)}
+.meta-v{color:var(--gold)}
+.meta-v.ok{color:#00d46a}
+.meta-v.bad{color:#ef4444}
+.meta-v.warn{color:var(--melt)}
+
+.div{height:1px;background:rgba(201,168,76,.1);margin:.8rem 0}
+
+.note{font-family:var(--mono);font-size:.55rem;color:rgba(201,168,76,.3);line-height:1.9}
+
+/* ══════════ VAULT ══════════ */
+.vault-grid{display:grid;grid-template-columns:280px 1fr;gap:1.5rem;height:100%;min-height:0}
+.vault-list{border:1px solid rgba(201,168,76,.15);overflow-y:auto;
+  background:rgba(13,7,5,.5)}
+.vault-item{padding:.7rem 1rem;border-bottom:1px solid rgba(201,168,76,.08);
+  cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
+.vault-item:hover{background:rgba(201,168,76,.05)}
+.vault-item.selected{background:rgba(201,168,76,.1);border-right:2px solid var(--gold)}
+.v-name{font-family:var(--mono);font-size:.7rem;color:var(--sand)}
+.v-date{font-family:var(--mono);font-size:.52rem;color:rgba(201,168,76,.35)}
+.vault-del{background:none;border:none;color:rgba(239,68,68,.4);cursor:pointer;
+  font-size:.8rem;padding:.1rem .3rem;transition:color .2s}
+.vault-del:hover{color:#ef4444}
+
+.vault-editor{display:flex;flex-direction:column;gap:.8rem}
+.vault-name-row{display:flex;gap:.5rem}
+.vault-name-row input{flex:1}
+
+/* result image */
+.res-img{max-width:100%;border:1px solid rgba(201,168,76,.2);display:none;margin-bottom:.5rem;
+  animation:daliMelt 14s ease-in-out infinite}
+.res-img.on{display:block}
+.res-text{background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.2);
+  padding:.8rem;font-family:var(--mono);font-size:.75rem;color:var(--sand);
+  white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;
+  direction:rtl;display:none}
+.res-text.on{display:block}
+.copy-btn{background:none;border:1px solid rgba(201,168,76,.2);color:rgba(201,168,76,.4);
+  font-family:var(--mono);font-size:.55rem;padding:.28rem .6rem;cursor:pointer;
+  letter-spacing:.1em;transition:all .2s}
+.copy-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ══════════ LOCK SCREEN ══════════ */
+#lockScreen{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(13,7,5,.97);
+  flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;
+}
+#lockScreen.on{display:flex}
+.ls-glyph{font-size:3.5rem;animation:daliMelt 5s ease-in-out infinite}
+.ls-title{font-family:var(--display);font-size:clamp(1.5rem,4vw,3rem);
+  color:#ef4444;letter-spacing:.15em;text-shadow:0 0 30px rgba(239,68,68,.5)}
+.ls-sub{font-family:var(--serif);font-style:italic;font-size:.8rem;
+  color:rgba(201,168,76,.5);text-align:center;line-height:2.2}
+.ls-sub span{color:#ef4444}
+.ls-timer{font-family:var(--display);font-size:clamp(2.5rem,6vw,5rem);
+  color:var(--melt);text-shadow:0 0 25px rgba(212,113,43,.5);direction:ltr}
+.ls-track{width:min(360px,80vw);height:3px;background:rgba(255,255,255,.06);border-radius:2px}
+.ls-fill{height:100%;background:linear-gradient(90deg,#ef4444,var(--melt));
+  transition:width 1s linear;border-radius:2px;box-shadow:0 0 10px #ef4444}
+
+/* file info */
+.fi{font-family:var(--mono);font-size:.58rem;color:rgba(201,168,76,.5);
+  margin-bottom:.6rem;padding:.4rem .6rem;
+  border:1px solid rgba(201,168,76,.15);background:rgba(201,168,76,.03);display:none}
+.fi.on{display:block}
+
+
+/* ══════════ WAV BACKUP ══════════ */
+#pWav{flex-direction:column;padding:1.5rem;overflow-y:auto}
+.wav-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;width:100%}
+.wav-col{display:flex;flex-direction:column;gap:.8rem}
+.wav-hdr{
+  font-family:var(--display);font-size:.85rem;letter-spacing:.2em;
+  margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem;
+}
+.wav-info-box{
+  background:rgba(61,107,138,.08);border:1px solid rgba(61,107,138,.25);
+  padding:.8rem;font-family:var(--mono);font-size:.58rem;
+  color:rgba(122,179,204,.6);line-height:1.9;letter-spacing:.04em;
+}
+.wav-info-box strong{color:#7ab3cc}
+.wav-progress{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;display:none}
+.wav-progress.on{display:block}
+.wav-progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--gold));
+  transition:width .3s;border-radius:2px;box-shadow:0 0 8px var(--sky)}
+.wav-waveform{
+  height:48px;background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.15);
+  display:none;position:relative;overflow:hidden;
+}
+.wav-waveform.on{display:block}
+.wav-waveform canvas{width:100%;height:100%;display:block}
+.wav-tag{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;
+  padding:.2rem .5rem;border:1px solid;border-radius:1px;
+}
+.wav-tag-blue{border-color:rgba(122,179,204,.3);color:#7ab3cc;background:rgba(14,165,233,.05)}
+.wav-tag-gold{border-color:rgba(201,168,76,.3);color:var(--gold);background:rgba(201,168,76,.05)}
+.wav-tag-rust{border-color:rgba(212,113,43,.3);color:var(--melt);background:rgba(212,113,43,.05)}
+.wav-restore-row{display:flex;flex-direction:column;gap:.5rem}
+.wav-restore-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.6rem .8rem;background:rgba(13,7,5,.6);
+  border:1px solid rgba(201,168,76,.12);
+}
+.wav-restore-label{font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.5)}
+.wav-restore-val{font-family:var(--mono);font-size:.6rem;color:var(--sand)}
+
+/* ══════════ KEY MIGRATION MODAL ══════════ */
+#keyMigrateModal{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(13,7,5,.92);
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+#keyMigrateModal.on{display:flex}
+
+.km-box{
+  width:min(520px,90vw);
+  border:1px solid rgba(201,168,76,.3);
+  background:rgba(20,10,5,.97);
+  padding:2rem;
+  position:relative;
+  animation:kmAppear .4s ease forwards;
+}
+@keyframes kmAppear{
+  from{opacity:0;transform:scaleX(1.04) scaleY(.96) skewX(2deg)}
+  to{opacity:1;transform:scaleX(1) scaleY(1) skewX(0deg)}
+}
+
+.km-title{
+  font-family:var(--display);font-size:1rem;letter-spacing:.2em;
+  color:var(--gold);margin-bottom:.3rem;
+}
+.km-sub{
+  font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.4);
+  letter-spacing:.08em;line-height:1.8;margin-bottom:1.2rem;
+}
+.km-verified{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.6rem;
+  color:#00d46a;letter-spacing:.1em;
+  padding:.4rem .7rem;border:1px solid rgba(0,212,106,.2);
+  background:rgba(0,212,106,.04);margin-bottom:1rem;
+}
+.km-steps{
+  display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;
+}
+.km-step{
+  display:flex;align-items:center;gap:.7rem;
+  font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.5);
+  letter-spacing:.06em;
+}
+.km-step-num{
+  width:18px;height:18px;border-radius:50%;border:1px solid rgba(201,168,76,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:var(--gold);flex-shrink:0;
+}
+.km-step.done .km-step-num{background:rgba(0,212,106,.15);border-color:#00d46a;color:#00d46a}
+.km-step.active .km-step-num{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold)}
+.km-step.active{color:var(--sand)}
+
+/* new key drop zone inside modal */
+.km-dz{
+  border:1px dashed rgba(201,168,76,.3);padding:1.5rem;
+  text-align:center;cursor:pointer;transition:all .25s;
+  position:relative;background:rgba(255,255,255,.01);margin-bottom:.8rem;
+}
+.km-dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.km-dz:hover{border-color:rgba(201,168,76,.7);background:rgba(201,168,76,.03)}
+.km-dz-icon{font-size:1.8rem;opacity:.3;margin-bottom:.4rem}
+.km-dz-txt{font-family:var(--mono);font-size:.58rem;color:rgba(201,168,76,.4);letter-spacing:.12em;text-transform:uppercase}
+
+.km-new-prev{display:none;margin-bottom:.8rem}
+.km-new-prev.on{display:block}
+.km-new-prev canvas{width:100%;max-height:100px;object-fit:contain;
+  border:1px solid rgba(201,168,76,.2);animation:daliMelt 12s ease-in-out infinite}
+.km-new-meta{font-family:var(--mono);font-size:.52rem;color:rgba(201,168,76,.4);margin-top:.25rem}
+
+.km-warning{
+  padding:.5rem .7rem;font-family:var(--mono);font-size:.58rem;
+  color:var(--melt);border-right:2px solid var(--melt);
+  background:rgba(212,113,43,.05);margin-bottom:.8rem;line-height:1.7;
+}
+.km-close{
+  position:absolute;top:.8rem;left:.8rem;
+  background:none;border:none;color:rgba(201,168,76,.3);
+  font-size:1.2rem;cursor:pointer;transition:color .2s;font-family:var(--mono);
+}
+.km-close:hover{color:var(--gold)}
+
+/* ══════════ DALI MISMATCH EFFECT ══════════ */
+.dali-frag{
+  position:fixed;
+  pointer-events:none;
+  z-index:300;
+  animation:fragMelt 3s ease-in-out forwards;
+}
+@keyframes fragMelt{
+  0%{opacity:1;transform:scaleX(1) scaleY(1) skewX(0deg) translateY(0)}
+  30%{transform:scaleX(1.15) scaleY(.85) skewX(15deg) translateY(10px)}
+  60%{transform:scaleX(.8) scaleY(1.2) skewX(-10deg) translateY(30px)}
+  100%{opacity:0;transform:scaleX(.3) scaleY(2) skewX(20deg) translateY(80px)}
+}
+
+@media(max-width:800px){
+  .enc-grid{grid-template-columns:1fr}
+  .dec-grid{grid-template-columns:1fr}
+  .vault-grid{grid-template-columns:1fr}
+  .intro-slots{flex-direction:column;gap:2rem;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ DALI BACKGROUND ══════════ -->
+<canvas id="daliCanvas"></canvas>
+
+<!-- ══════════ LOCK SCREEN ══════════ -->
+<div id="lockScreen">
+  <div class="ls-glyph">🕰️</div>
+  <div class="ls-title">SYSTEM LOCKED</div>
+  <div class="ls-sub">
+    Detected <span id="lsCount">5</span> suspicious attempts<br>
+    Time remaining:
+  </div>
+  <div class="ls-timer" id="lsTimer">30:00</div>
+  <div class="ls-track"><div class="ls-fill" id="lsFill" style="width:100%"></div></div>
+</div>
+
+<!-- ══════════ INTRO SCREEN ══════════ -->
+<div id="intro">
+
+  <!-- Animated Dali image that stretches/shrinks -->
+  <canvas id="daliImgCanvas" style="
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:clamp(200px,40vw,480px);
+    height:clamp(200px,40vw,480px);
+    opacity:.18;
+    pointer-events:none;
+    z-index:0;
+    animation:daliImgMorph 7s ease-in-out infinite;
+    filter:sepia(1) hue-rotate(10deg) saturate(1.4);
+  "></canvas>
+
+  <div class="intro-title" style="position:relative;z-index:1">Illusion<br>Effect</div>
+  <div class="intro-sub" style="position:relative;z-index:1">Steganographic Cipher · Visual Encryption</div>
+
+  <div class="intro-slots" style="position:relative;z-index:1">
+    <!-- Slot 1 -->
+    <div class="i-slot">
+      <div class="i-slot-frame" id="slot1Frame">
+        <input type="file" accept="image/*" id="slot1File" onchange="loadSlot(1,this)">
+        <canvas id="slot1Canvas"></canvas>
+        <div class="i-slot-inner" id="slot1Inner">
+          <div class="i-slot-num" style="font-size:clamp(1rem,2.5vw,2rem);opacity:.5">IMAGE ONE</div>
+          <div class="i-slot-label" style="font-size:.7rem;opacity:.5">Load first image</div>
+        </div>
+      </div>
+      <div class="i-slot-tag">Image One</div>
+    </div>
+
+    <!-- divider -->
+    <div style="font-family:var(--serif);font-size:2rem;color:var(--gold);opacity:.3;padding-bottom:2rem;align-self:center">✦</div>
+
+    <!-- Slot 2 -->
+    <div class="i-slot">
+      <div class="i-slot-frame" id="slot2Frame">
+        <input type="file" accept="image/*" id="slot2File" onchange="loadSlot(2,this)">
+        <canvas id="slot2Canvas"></canvas>
+        <div class="i-slot-inner" id="slot2Inner">
+          <div class="i-slot-num" style="font-size:clamp(1rem,2.5vw,2rem);opacity:.5">IMAGE TWO</div>
+          <div class="i-slot-label" style="font-size:.7rem;opacity:.5">Load second image</div>
+        </div>
+      </div>
+      <div class="i-slot-tag">Image Two</div>
+    </div>
+  </div>
+
+  <button class="enter-btn" id="enterBtn" onclick="enterApp()" style="position:relative;z-index:1">Enter the Illusion</button>
+  <div id="slotHint" style="font-family:var(--mono);font-size:.55rem;color:rgba(201,168,76,.4);letter-spacing:.1em;margin-top:-.2rem;position:relative;z-index:1">Load both images to continue</div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="app-title">✦ Illusion Effect</div>
+    <span class="key-badge" id="keyBadge">KEY: לא נטען</span>
+    <div class="topbar-right">
+      <div class="meter" id="meter"></div>
+      <span class="meter-lbl" id="meterLbl">0/5</span>
+      <button class="nav-btn active" onclick="showPanel('pEncode',this)">Encrypt</button>
+      <button class="nav-btn" onclick="showPanel('pDecode',this)">Decrypt</button>
+      <button class="nav-btn" onclick="showPanel('pVault',this)">Vault</button>
+      <button class="nav-btn" onclick="showPanel('pWav',this)">WAV Backup</button>
+      <button class="nav-btn" id="migrateKeyBtn" onclick="openKeyMigrate()" style="border-color:rgba(61,107,138,.3);color:rgba(122,179,204,.5);display:none" title="Replace key image — available after successful decrypt">⟳ Replace Key</button>
+      <button class="nav-btn" onclick="backToIntro()" style="border-color:rgba(139,37,0,.3);color:rgba(212,113,43,.5)">← Back</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ ENCODE PANEL ══ -->
+    <div class="panel active" id="pEncode">
+      <div class="enc-grid">
+
+        <!-- COL 1: Carrier -->
+        <div class="ec">
+          <div class="sec-hdr" style="color:var(--gold)">
+            <div class="sec-pip" style="background:var(--gold);box-shadow:0 0 6px var(--gold)"></div>
+            תמונת Carrier
+          </div>
+
+          <div class="note" style="margin-bottom:.8rem">
+            תמונת ה-Carrier נטענה ממסך הכניסה.<br>ניתן לשנות כאן:
+          </div>
+
+          <div class="dz" id="encCZ">
+            <input type="file" accept="image/*" id="encCF" onchange="loadEnc(this)">
+            <div class="dz-icon">⬡</div>
+            <div class="dz-txt">שנה Carrier</div>
+          </div>
+
+          <div class="prev-wrap on" id="encCPrev">
+            <canvas id="encCCv"></canvas>
+            <div class="img-meta" id="encCMeta"></div>
+          </div>
+
+          <div class="cap-bar"><div class="cap-fill" id="capFill" style="width:0%;background:var(--gold)"></div></div>
+          <div class="cap-txt" id="capTxt">—</div>
+
+          <div class="div"></div>
+
+          <div class="pt-row">
+            <button class="pt-b on" onclick="setPT('text',this)">טקסט</button>
+            <button class="pt-b" onclick="setPT('file',this)">קובץ / תמונה</button>
+          </div>
+
+          <div id="ptText">
+            <label class="lbl">הטקסט הסודי</label>
+            <textarea id="secretTxt" oninput="updateCap()" placeholder="הכנס הודעה..."></textarea>
+          </div>
+          <div id="ptFile" style="display:none">
+            <label class="lbl">קובץ להסתרה</label>
+            <div class="dz">
+              <input type="file" id="payloadFile" onchange="onPayloadFile(this)">
+              <div class="dz-icon">📎</div>
+              <div class="dz-txt">גרור קובץ כלשהו</div>
+            </div>
+            <div class="fi" id="fileInfo"></div>
+          </div>
+
+          <!-- Vault quick-pick -->
+          <div class="div"></div>
+          <label class="lbl">בחר מהכספת</label>
+          <select id="vaultPick" onchange="pickFromVault()" style="width:100%;background:rgba(13,7,5,.8);border:1px solid rgba(201,168,76,.2);color:var(--sand);font-family:var(--mono);font-size:.68rem;padding:.45rem;outline:none;margin-bottom:.6rem">
+            <option value="">— בחר רשומה מהכספת —</option>
+          </select>
+        </div>
+
+        <!-- COL 2: Key + RL -->
+        <div class="ec">
+          <div class="sec-hdr" style="color:var(--melt)">
+            <div class="sec-pip" style="background:var(--melt);box-shadow:0 0 6px var(--melt)"></div>
+            מפתח + Rate Limit
+          </div>
+
+          <div class="note" style="margin-bottom:.8rem">
+            מפתח ה-AES ייווצר אוטומטית ויישמר בתמונת ה-Key שנטענה.
+            <strong style="color:var(--gold)">אותו Key image ניתן לשימוש חוזר!</strong>
+          </div>
+
+          <div class="prev-wrap on" id="encKPrev">
+            <canvas id="encKCv"></canvas>
+            <div class="img-meta" id="encKMeta"></div>
+          </div>
+
+          <div class="rl-mini">
+            <div class="rl-title-s">⏱ Rate Limit</div>
+            <div class="rl-row">
+              <span class="rl-l">מקס׳ ניסיונות</span>
+              <div class="rl-ctrl">
+                <button class="rl-b" onclick="adj('maxA',-1)">−</button>
+                <span class="rl-v" id="vMaxA">5</span>
+                <button class="rl-b" onclick="adj('maxA',1)">+</button>
+              </div>
+            </div>
+            <div class="rl-row">
+              <span class="rl-l">חלון (שניות)</span>
+              <div class="rl-ctrl">
+                <button class="rl-b" onclick="adj('win',-5)">−</button>
+                <span class="rl-v" id="vWin">10</span>
+                <button class="rl-b" onclick="adj('win',5)">+</button>
+              </div>
+            </div>
+            <div class="rl-row">
+              <span class="rl-l">חסימה (דקות)</span>
+              <div class="rl-ctrl">
+                <button class="rl-b" onclick="adj('lock',-5)">−</button>
+                <span class="rl-v" id="vLock">30</span>
+                <button class="rl-b" onclick="adj('lock',5)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-gold" id="encBtn" onclick="encodeAll()" disabled>
+            <span>הצפן</span>
+          </button>
+          <div class="st" id="encSt"></div>
+        </div>
+
+        <!-- COL 3: Output -->
+        <div class="ec">
+          <div class="sec-hdr" style="color:#7ab3cc">
+            <div class="sec-pip" style="background:var(--sky);box-shadow:0 0 6px var(--sky)"></div>
+            קבצי פלט
+          </div>
+
+          <div class="note" style="margin-bottom:1rem">
+            Carrier מוצפן ← AES-256-GCM + LSB<br>
+            Key image ← מפתח מעודכן + Rate Limit<br>
+            <span style="color:var(--melt)">שמור שניהם כ-PNG בלבד</span>
+          </div>
+
+          <label class="lbl">Carrier מוצפן</label>
+          <div class="prev-wrap" id="outCPrev">
+            <canvas id="outCCv"></canvas>
+          </div>
+          <button class="btn btn-gold" id="dlCBtn" onclick="dl('c')" disabled><span>הורד Carrier PNG</span></button>
+
+          <div class="div"></div>
+
+          <label class="lbl">Key image מעודכן</label>
+          <div class="prev-wrap" id="outKPrev">
+            <canvas id="outKCv"></canvas>
+          </div>
+          <button class="btn btn-rust" id="dlKBtn" onclick="dl('k')" disabled><span>הורד Key PNG</span></button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ DECODE PANEL ══ -->
+    <div class="panel" id="pDecode">
+      <div class="dec-grid">
+
+        <!-- COL 1: Inputs -->
+        <div class="dc">
+          <div class="sec-hdr" style="color:var(--gold)">
+            <div class="sec-pip" style="background:var(--gold)"></div>
+            טעינת קבצים
+          </div>
+
+          <label class="lbl">Carrier PNG מוצפן</label>
+          <div class="dz">
+            <input type="file" accept="image/png" id="decCF" onchange="loadDec('c',this)">
+            <div class="dz-icon">⬡</div>
+            <div class="dz-txt">Carrier PNG</div>
+          </div>
+          <div class="prev-wrap" id="decCPrev">
+            <canvas id="decCCv"></canvas>
+            <div class="img-meta" id="decCMeta"></div>
+          </div>
+
+          <div class="div"></div>
+
+          <label class="lbl">Key PNG (נטען ממסך הכניסה)</label>
+          <div class="dz">
+            <input type="file" accept="image/png" id="decKF" onchange="loadDec('k',this)">
+            <div class="dz-icon">◈</div>
+            <div class="dz-txt">שנה Key PNG</div>
+          </div>
+          <div class="prev-wrap on" id="decKPrev">
+            <canvas id="decKCv"></canvas>
+            <div class="img-meta" id="decKMeta"></div>
+          </div>
+
+          <div class="meta-box" id="metaBox">
+            <div class="meta-title-s">מידע מה-Key</div>
+            <div class="meta-row"><span class="meta-k">Rate Limit</span><span class="meta-v" id="mRL">—</span></div>
+            <div class="meta-row"><span class="meta-k">ניסיון אחרון</span><span class="meta-v" id="mLast">—</span></div>
+            <div class="meta-row"><span class="meta-k">ניסיונות בחלון</span><span class="meta-v" id="mCnt">—</span></div>
+            <div class="meta-row"><span class="meta-k">סטטוס</span><span class="meta-v" id="mStat">—</span></div>
+          </div>
+
+          <button class="btn btn-gold" id="decBtn" onclick="decodeAll()" disabled><span>פענח</span></button>
+          <button class="btn btn-rust" id="dlUpdBtn" onclick="dl('uk')" disabled style="display:none"><span>הורד Key מעודכן ⟳</span></button>
+          <div class="st" id="decSt"></div>
+        </div>
+
+        <!-- COL 2: Result -->
+        <div class="dc">
+          <div class="sec-hdr" style="color:#7ab3cc">
+            <div class="sec-pip" style="background:var(--sky)"></div>
+            תוצאה
+          </div>
+
+          <div id="decResultWrap" style="display:none">
+            <div id="rText" style="display:none">
+              <label class="lbl">הטקסט שחולץ</label>
+              <div class="res-text on" id="rTextBox"></div>
+              <button class="copy-btn" onclick="copyResult()">העתק ללוח</button>
+            </div>
+            <div id="rFile" style="display:none">
+              <label class="lbl">קובץ שחולץ</label>
+              <img class="res-img" id="rImg" alt="">
+              <button class="btn btn-sky" id="dlResBtn" onclick="dlExtracted()" style="margin-top:.4rem"><span>הורד קובץ</span></button>
+            </div>
+          </div>
+
+          <div class="div"></div>
+          <div class="note">
+            לאחר פענוח מוצלח — הורד<br>
+            את ה-<span style="color:var(--melt)">Key המעודכן</span> לשמירת<br>
+            מצב ה-Rate Limit לפעם הבאה.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ══ WAV BACKUP PANEL ══ -->
+    <div class="panel" id="pWav">
+      <div style="width:100%;max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:1.2rem">
+
+        <div class="sec-hdr" style="color:#7ab3cc">
+          <div class="sec-pip" style="background:var(--sky);box-shadow:0 0 6px var(--sky)"></div>
+          גיבוי ושחזור — פורמט WAV לגרמין ומכשירים ניידים
+        </div>
+
+        <div class="wav-info-box">
+          <strong>כיצד זה עובד:</strong> הנתונים נטמעים ב-LSB של דגימות 16-bit PCM של קובץ WAV.<br>
+          שינוי של 1 מתוך 65,536 ערכי האמפליטודה — <strong>בלתי ניתן לשמיעה לאוזן האנושית.</strong><br>
+          WAV הוא פורמט <strong>lossless</strong> — הנתונים נשמרים ללא אובדן, בניגוד ל-MP3.<br>
+          קובץ WAV של 3 דקות (44.1kHz 16-bit stereo) ≈ 30MB → מאחסן עד <strong>~3.7MB נתונים.</strong><br>
+          ניתן להעלות לגרמין, טלפון, או כל מכשיר שתומך ב-<strong>.wav</strong>
+        </div>
+
+        <div class="wav-grid">
+
+          <!-- LEFT: BACKUP (PNG → WAV) -->
+          <div class="wav-col">
+            <div class="wav-hdr" style="color:var(--gold)">
+              <div class="sec-pip" style="background:var(--gold)"></div>
+              יצירת גיבוי WAV
+            </div>
+
+            <div class="note" style="margin-bottom:.3rem">בחר מה לגבות לתוך WAV:</div>
+
+            <div class="pt-row">
+              <button class="pt-b on" id="wavBkpTypeKey" onclick="setWavBkpType('key',this)">Key Image</button>
+              <button class="pt-b" id="wavBkpTypeCarrier" onclick="setWavBkpType('carrier',this)">Carrier Image</button>
+              <button class="pt-b" id="wavBkpTypeBoth" onclick="setWavBkpType('both',this)">שניהם</button>
+            </div>
+
+            <label class="lbl">קובץ WAV בסיס (לאחסון הגיבוי)</label>
+            <div class="dz" id="wavBaseDZ">
+              <input type="file" accept="audio/wav,audio/wave,.wav" id="wavBaseFile" onchange="loadWavBase(this)">
+              <div class="dz-icon">♪</div>
+              <div class="dz-txt">גרור WAV בסיס · או לחץ לבחירה</div>
+            </div>
+
+            <div id="wavBaseInfo" class="fi" style="display:none"></div>
+
+            <!-- Waveform preview -->
+            <div class="wav-waveform" id="wavWaveform">
+              <canvas id="wavWaveformCv"></canvas>
+            </div>
+
+            <div id="wavBkpCapInfo" style="display:none">
+              <div class="cap-bar"><div class="cap-fill" id="wavCapFill" style="width:0%"></div></div>
+              <div class="cap-txt" id="wavCapTxt">—</div>
+            </div>
+
+            <button class="btn btn-gold" id="wavBkpBtn" onclick="createWavBackup()" disabled>
+              <span>צור גיבוי WAV</span>
+            </button>
+            <div class="wav-progress" id="wavBkpProgress">
+              <div class="wav-progress-fill" id="wavBkpProgressFill" style="width:0%"></div>
+            </div>
+            <div class="st" id="wavBkpSt"></div>
+
+            <button class="btn btn-sky" id="wavDlBtn" onclick="dlWavBackup()" disabled style="display:none">
+              <span>הורד WAV גיבוי</span>
+            </button>
+          </div>
+
+          <!-- RIGHT: RESTORE (WAV → PNG) -->
+          <div class="wav-col">
+            <div class="wav-hdr" style="color:var(--melt)">
+              <div class="sec-pip" style="background:var(--melt)"></div>
+              שחזור מ-WAV
+            </div>
+
+            <label class="lbl">קובץ WAV גיבוי לשחזור</label>
+            <div class="dz" style="border-color:rgba(212,113,43,.3)" id="wavRestoreDZ">
+              <input type="file" accept="audio/wav,audio/wave,.wav" id="wavRestoreFile" onchange="loadWavRestore(this)">
+              <div class="dz-icon">♫</div>
+              <div class="dz-txt">גרור WAV גיבוי · לחץ לבחירה</div>
+            </div>
+
+            <div id="wavRestoreInfo" class="fi" style="display:none"></div>
+
+            <div class="meta-box on" id="wavRestoreMeta" style="display:none">
+              <div class="meta-title-s">מידע מהגיבוי</div>
+              <div class="meta-row"><span class="meta-k">סוג</span><span class="meta-v" id="wavMetaType">—</span></div>
+              <div class="meta-row"><span class="meta-k">גודל נתונים</span><span class="meta-v" id="wavMetaSize">—</span></div>
+              <div class="meta-row"><span class="meta-k">תאריך גיבוי</span><span class="meta-v" id="wavMetaDate">—</span></div>
+              <div class="meta-row"><span class="meta-k">גרסה</span><span class="meta-v" id="wavMetaVer">—</span></div>
+            </div>
+
+            <button class="btn btn-rust" id="wavRestoreBtn" onclick="restoreFromWav()" disabled>
+              <span>שחזר מ-WAV</span>
+            </button>
+            <div class="wav-progress" id="wavRestoreProgress">
+              <div class="wav-progress-fill" id="wavRestoreProgressFill" style="width:0%"></div>
+            </div>
+            <div class="st" id="wavRestoreSt"></div>
+
+            <!-- Restore results -->
+            <div id="wavRestoreResults" style="display:none">
+              <div class="wav-restore-row" id="wavRestoreRows"></div>
+              <div class="note" style="margin-top:.6rem">
+                לחץ "טען לאפליקציה" כדי להחיל את הקבצים המשוחזרים ישירות על מצב האפליקציה.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="note" style="border-top:1px solid rgba(201,168,76,.1);padding-top:.8rem">
+          ⚠ WAV lossless בלבד — אל תמיר לMP3 לאחר הגיבוי, הדחיסה תשמיד את הנתונים.<br>
+          ✦ ניתן לשמור WAV על שעון גרמין ולשחזר ממנו בכל מחשב עם האפליקציה.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ VAULT PANEL ══ -->
+    <div class="panel" id="pVault">
+      <div style="width:100%;display:flex;flex-direction:column;gap:1rem">
+        <div class="sec-hdr" style="color:var(--gold)">
+          <div class="sec-pip" style="background:var(--gold)"></div>
+          כספת סיסמאות — שמורה בתוך האפליקציה בלבד
+        </div>
+
+        <div class="note" style="padding:.6rem .8rem;border:1px solid rgba(201,168,76,.1);background:rgba(201,168,76,.03)">
+          ⚠ הכספת קיימת <strong style="color:var(--gold)">בתוך סביבת העבודה של האפליקציה בלבד</strong>.<br>
+          הנתונים לא נשמרים לקובץ, לא יוצאים לענן, ולא נגישים לאחר סגירת הדפדפן.
+        </div>
+
+        <div class="vault-grid">
+          <!-- LIST -->
+          <div style="display:flex;flex-direction:column;gap:.5rem;min-height:0">
+            <div style="display:flex;gap:.4rem">
+              <button class="btn btn-gold" onclick="newVaultEntry()" style="margin-bottom:0"><span>+ חדש</span></button>
+            </div>
+            <div class="vault-list" id="vaultList"></div>
+          </div>
+
+          <!-- EDITOR -->
+          <div class="vault-editor" id="vaultEditor">
+            <div class="note" style="text-align:center;padding:2rem">בחר רשומה או צור חדשה</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ KEY MIGRATION MODAL ══════════ -->
+<div id="keyMigrateModal">
+  <div class="km-box">
+    <button class="km-close" onclick="closeKeyMigrate()">✕</button>
+
+    <div class="km-title">✦ החלפת תמונת המפתח</div>
+    <div class="km-sub">
+      העברת המפתח הקיים לתמונה חדשה.<br>
+      פעולה זו מותרת רק לאחר פענוח מוצלח — כדי לאמת שיש ברשותך את המפתח הנכון.
+    </div>
+
+    <div class="km-verified" id="kmVerified">
+      <span>✓</span> <span id="kmVerifiedTxt">פענוח מאומת</span>
+    </div>
+
+    <div class="km-steps" id="kmSteps">
+      <div class="km-step done" id="kmStep1">
+        <div class="km-step-num">✓</div>
+        <span>פענוח מוצלח — מפתח AES זוהה</span>
+      </div>
+      <div class="km-step active" id="kmStep2">
+        <div class="km-step-num">2</div>
+        <span>טען תמונה חדשה לאחסון המפתח</span>
+      </div>
+      <div class="km-step" id="kmStep3">
+        <div class="km-step-num">3</div>
+        <span>אמת קיבולת ולחץ העבר</span>
+      </div>
+    </div>
+
+    <!-- New Key Image Drop Zone -->
+    <label class="lbl">תמונה חדשה לאחסון המפתח</label>
+    <div class="km-dz" id="kmDZ">
+      <input type="file" accept="image/*" id="kmNewKeyFile" onchange="loadNewKeyImg(this)">
+      <div class="km-dz-icon">◈</div>
+      <div class="km-dz-txt">גרור תמונה חדשה · PNG / JPG / WEBP</div>
+    </div>
+
+    <div class="km-new-prev" id="kmNewPrev">
+      <canvas id="kmNewKeyCv"></canvas>
+      <div class="km-new-meta" id="kmNewMeta"></div>
+    </div>
+
+    <div class="km-warning" id="kmWarning" style="display:none"></div>
+
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-gold" id="kmMigrateBtn" onclick="executeMigration()" disabled style="margin-bottom:0">
+        <span>העבר מפתח לתמונה חדשה</span>
+      </button>
+      <button class="btn btn-rust" onclick="closeKeyMigrate()" style="margin-bottom:0;flex-shrink:0;width:auto;padding:.7rem 1.2rem">
+        <span>ביטול</span>
+      </button>
+    </div>
+
+    <div class="st" id="kmSt" style="margin-top:.5rem;margin-bottom:0"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DALI BACKGROUND CANVAS
+// ══════════════════════════════════════════════════════
+(function(){
+  const cv=document.getElementById('daliCanvas');
+  const ctx=cv.getContext('2d');
+  let t=0,W,H;
+
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+
+  // Clocks, melting shapes
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // Sky gradient
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#1a0a00');g.addColorStop(.4,'#2d1a0a');
+    g.addColorStop(.7,'#1a1010');g.addColorStop(1,'#0d0705');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+
+    // Horizon glow
+    const hg=ctx.createRadialGradient(W*.5,H*.62,0,W*.5,H*.62,W*.6);
+    hg.addColorStop(0,'rgba(139,37,0,.12)');hg.addColorStop(1,'transparent');
+    ctx.fillStyle=hg;ctx.fillRect(0,0,W,H);
+
+    // Ground plane (melting)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0,H*.65+Math.sin(t*.3)*8);
+    for(let x=0;x<=W;x+=4){
+      const y=H*.65+Math.sin(t*.3+x*.008)*6+Math.sin(t*.7+x*.015)*3;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+    const fg=ctx.createLinearGradient(0,H*.6,0,H);
+    fg.addColorStop(0,'rgba(90,50,10,.5)');fg.addColorStop(1,'rgba(20,8,2,.8)');
+    ctx.fillStyle=fg;ctx.fill();
+    ctx.restore();
+
+    // Melting clock 1
+    drawClock(ctx,W*.2,H*.58,70+Math.sin(t*.4)*5,t);
+    // Melting clock 2
+    drawClock(ctx,W*.75,H*.52,55+Math.sin(t*.35+1)*4,t+2);
+    // Distant clock (small)
+    drawClock(ctx,W*.5,H*.68,35+Math.sin(t*.5+2)*3,t+4);
+
+    // Floating dust
+    for(let i=0;i<20;i++){
+      const x=(Math.sin(t*.1+i*137.5)*0.5+0.5)*W;
+      const y=(Math.cos(t*.08+i*97.3)*0.5+0.5)*H*.7;
+      const r=Math.sin(t*.5+i)*1.5+2;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(201,168,76,${.05+Math.sin(t+i)*.04})`;ctx.fill();
+    }
+
+    t+=.008;
+    requestAnimationFrame(draw);
+  }
+
+  function drawClock(ctx,cx,cy,r,time){
+    ctx.save();
+    // Melt warp
+    const melt=Math.sin(time*.5)*.3+.5;
+    ctx.translate(cx,cy);
+    ctx.scale(1+Math.sin(time*.4)*.08,1+Math.cos(time*.3)*.06);
+
+    // Clock face (melting outline)
+    ctx.beginPath();
+    for(let a=0;a<Math.PI*2;a+=.05){
+      const warp=1+Math.sin(a*3+time*.5)*melt*.12;
+      const x=Math.cos(a)*r*warp;
+      const y=Math.sin(a)*r*warp*(1+Math.sin(time*.4)*.15);
+      a<.05?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle=`rgba(201,168,76,${.15+Math.sin(time)*.05})`;
+    ctx.lineWidth=1;ctx.stroke();
+
+    // Dripping bottom
+    ctx.beginPath();
+    ctx.moveTo(-r*.2,r*.8);
+    ctx.quadraticCurveTo(0,r*1.4+Math.sin(time*.8)*10,-r*.05,r*1.2+Math.sin(time*.6)*15);
+    ctx.strokeStyle=`rgba(201,168,76,${.1+Math.sin(time*.7)*.05})`;
+    ctx.lineWidth=2;ctx.stroke();
+
+    // Hands
+    const hr=(time*.1)%(Math.PI*2);
+    const mn=(time*.5)%(Math.PI*2);
+    ctx.strokeStyle=`rgba(201,168,76,.25)`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(hr-Math.PI/2)*r*.5,Math.sin(hr-Math.PI/2)*r*.5);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(mn-Math.PI/2)*r*.7,Math.sin(mn-Math.PI/2)*r*.7);ctx.stroke();
+
+    ctx.restore();
+  }
+
+  draw();
+})();
+
+// ══════════════════════════════════════════════════════
+// DALI INTRO IMAGE — surreal morphing figure on canvas
+// ══════════════════════════════════════════════════════
+(function(){
+  const cv = document.getElementById('daliImgCanvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let t = 0;
+  const SIZE = 512;
+  cv.width = SIZE; cv.height = SIZE;
+
+  function drawDaliImage(){
+    ctx.clearRect(0,0,SIZE,SIZE);
+    const cx = SIZE/2, cy = SIZE/2;
+
+    // Desert floor
+    ctx.save();
+    ctx.beginPath();
+    const floorY = SIZE*.68 + Math.sin(t*.4)*8;
+    ctx.moveTo(0, floorY);
+    for(let x=0;x<=SIZE;x+=3){
+      ctx.lineTo(x, floorY + Math.sin(t*.5+x*.012)*5 + Math.sin(t*.9+x*.022)*3);
+    }
+    ctx.lineTo(SIZE,SIZE); ctx.lineTo(0,SIZE); ctx.closePath();
+    const fg = ctx.createLinearGradient(0,floorY,0,SIZE);
+    fg.addColorStop(0,'rgba(120,70,20,.9)'); fg.addColorStop(1,'rgba(40,15,5,1)');
+    ctx.fillStyle=fg; ctx.fill(); ctx.restore();
+
+    // Sky
+    const sky = ctx.createLinearGradient(0,0,0,floorY);
+    sky.addColorStop(0,'rgba(30,10,0,.95)');
+    sky.addColorStop(.6,'rgba(80,35,10,.7)');
+    sky.addColorStop(1,'rgba(120,55,15,.4)');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,SIZE,floorY+2);
+
+    // === MELTING CLOCK 1 — draped over invisible shelf ===
+    drawMeltClock(ctx, SIZE*.28, SIZE*.44, 80, t, 1.4);
+
+    // === MELTING CLOCK 2 — smaller, distant ===
+    drawMeltClock(ctx, SIZE*.72, SIZE*.52, 52, t+1.8, 1.1);
+
+    // === Tall thin figure (Dali-esque crutch figure) ===
+    ctx.save();
+    ctx.strokeStyle='rgba(201,168,76,.55)';
+    ctx.lineWidth=2.5;
+    ctx.lineCap='round';
+    // body
+    const figX = SIZE*.52 + Math.sin(t*.3)*4;
+    const figY = SIZE*.62;
+    ctx.beginPath();
+    // legs (spindly)
+    ctx.moveTo(figX, figY);
+    ctx.quadraticCurveTo(figX-18+Math.sin(t*.6)*3, figY+28, figX-12, figY+55+Math.sin(t*.4)*4);
+    ctx.moveTo(figX, figY);
+    ctx.quadraticCurveTo(figX+14+Math.sin(t*.5)*3, figY+25, figX+10, figY+55+Math.sin(t*.35)*4);
+    // torso
+    ctx.moveTo(figX-12, figY);
+    ctx.quadraticCurveTo(figX+Math.sin(t*.4)*5, figY-30, figX, figY-65+Math.sin(t*.5)*6);
+    // head (egg shaped)
+    ctx.ellipse(figX+Math.sin(t*.3)*3, figY-78+Math.sin(t*.4)*5,
+      10+Math.sin(t*.6)*2, 14+Math.cos(t*.5)*2, Math.sin(t*.2)*.3, 0, Math.PI*2);
+    ctx.stroke();
+
+    // crutch
+    ctx.beginPath();
+    ctx.moveTo(figX+8, figY-40);
+    ctx.lineTo(figX+35+Math.sin(t*.4)*5, figY+30+Math.sin(t*.3)*8);
+    ctx.strokeStyle='rgba(180,140,60,.4)'; ctx.lineWidth=2;
+    ctx.stroke();
+    ctx.restore();
+
+    // === Floating watch face — flat on ground, melting ===
+    ctx.save();
+    ctx.translate(SIZE*.5, SIZE*.66);
+    ctx.scale(1+Math.sin(t*.4)*.06, 1);
+    ctx.rotate(Math.sin(t*.3)*.08);
+    ctx.beginPath();
+    ctx.ellipse(0,0, 38+Math.sin(t*.5)*4, 14+Math.sin(t*.4)*2, 0, 0, Math.PI*2);
+    ctx.strokeStyle='rgba(201,168,76,.35)'; ctx.lineWidth=1.5; ctx.stroke();
+    // drip
+    ctx.beginPath();
+    ctx.moveTo(8, 10);
+    ctx.quadraticCurveTo(12, 22+Math.sin(t*.7)*6, 6, 30+Math.sin(t*.5)*8);
+    ctx.strokeStyle='rgba(201,168,76,.22)'; ctx.lineWidth=3; ctx.stroke();
+    ctx.restore();
+
+    // Atmospheric sun/glow on horizon
+    const sunG = ctx.createRadialGradient(SIZE*.5, floorY, 0, SIZE*.5, floorY, SIZE*.35);
+    sunG.addColorStop(0,'rgba(200,100,20,.18)');
+    sunG.addColorStop(1,'transparent');
+    ctx.fillStyle=sunG; ctx.fillRect(0,0,SIZE,SIZE);
+
+    t += .012;
+    requestAnimationFrame(drawDaliImage);
+  }
+
+  function drawMeltClock(ctx, x, y, r, time, droop){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1+Math.sin(time*.4)*.07, 1+Math.cos(time*.35)*.05);
+
+    // clock body — morphing ellipse
+    ctx.beginPath();
+    for(let a=0;a<Math.PI*2;a+=.05){
+      const w = 1 + Math.sin(a*2+time*.6)*droop*.08;
+      const h = 1 + Math.cos(a*3+time*.5)*droop*.06;
+      const px = Math.cos(a)*r*w;
+      const py = Math.sin(a)*r*h;
+      a<.05 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.strokeStyle='rgba(201,168,76,.5)';
+    ctx.lineWidth=1.5; ctx.stroke();
+
+    // drip / melting bottom
+    ctx.beginPath();
+    ctx.moveTo(-r*.15, r*.85);
+    ctx.bezierCurveTo(
+      -r*.1, r*1.1+Math.sin(time*.6)*8,
+       r*.1, r*1.3+Math.sin(time*.4)*10,
+      -r*.05+Math.sin(time*.7)*6, r*(1.2+droop*.3)+Math.sin(time*.5)*12
+    );
+    ctx.strokeStyle='rgba(201,168,76,.3)';
+    ctx.lineWidth=droop*1.5; ctx.lineCap='round'; ctx.stroke();
+
+    // hands
+    const hr = (time*.08)%(Math.PI*2);
+    const mn = (time*.4)%(Math.PI*2);
+    ctx.strokeStyle='rgba(232,213,163,.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(hr-Math.PI/2)*r*.45, Math.sin(hr-Math.PI/2)*r*.45); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(mn-Math.PI/2)*r*.65, Math.sin(mn-Math.PI/2)*r*.65); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  drawDaliImage();
+})();
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const S={
+  // intro
+  slot1:null, slot2:null,  // ImageData from intro
+  slot1URL:null, slot2URL:null,
+  // app
+  encC:null, encK:null,
+  decC:null, decK:null,
+  outCURL:null, outKURL:null, updKURL:null,
+  extractedBlob:null, extractedName:'file', extractedMime:'',
+  payloadType:'text',
+  payloadBytes:null, payloadMime:'text/plain', payloadName:'msg',
+  rl:{maxA:5,win:10,lock:30},
+  lockUntil:0, lockTmr:null,
+  // vault (in-memory only)
+  vault:[], vaultSel:-1,
+  migrationUnlocked:false,
+  migrationKP:null,
+  newKeyImgData:null,
+  newKeyURL:null,
+};
+
+// ══════════════════════════════════════════════════════
+// INTRO — SLOT LOADING
+// ══════════════════════════════════════════════════════
+function loadSlot(n,inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cv=$(n===1?'slot1Canvas':'slot2Canvas');
+      cv.width=img.width;cv.height=img.height;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const id=ctx.getImageData(0,0,img.width,img.height);
+      if(n===1){S.slot1=id;S.slot1URL=r.result;}
+      else{S.slot2=id;S.slot2URL=r.result;}
+      cv.classList.add('loaded');
+      $(`slot${n}Inner`).style.opacity='0';
+      checkEnterReady();
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+
+function checkEnterReady(){
+  const btn=$('enterBtn');
+  if(S.slot1&&S.slot2){
+    btn.classList.add('ready');
+    const hint=$('slotHint');
+    if(hint) hint.style.display='none';
+  } else if(S.slot1||S.slot2){
+    const hint=$('slotHint');
+    if(hint) hint.textContent=S.slot1?'Now load Image Two':'Now load Image One';
+  }
+}
+
+function enterApp(){
+  if(!S.slot1&&!S.slot2){
+    alert('Please load both Image One and Image Two first.');
+    return;
+  }
+  if(!S.slot1){alert('Please load Image One (Key Image) first.');return;}
+  if(!S.slot2){alert('Please load Image Two (Carrier Image) first.');return;}
+
+  // Copy intro images into app state
+  S.encK=S.slot1; S.encC=S.slot2;
+  S.decK=S.slot1; S.decC=null;
+
+  // Render Key preview
+  renderImgData(S.encK,'encKCv');
+  $('encKPrev').classList.add('on');
+  $('encKMeta').textContent=`${S.encK.width}×${S.encK.height} · key cap: ${fmtSz(lsbCap(S.encK))}`;
+
+  // Render Carrier preview
+  renderImgData(S.encC,'encCCv');
+  $('encCPrev').classList.add('on');
+  $('encCMeta').textContent=`${S.encC.width}×${S.encC.height} · cap: ${fmtSz(lsbCap(S.encC))}`;
+
+  // Render decode Key preview
+  renderImgData(S.decK,'decKCv');
+  $('decKPrev').classList.add('on');
+  $('decKMeta').textContent=`${S.encK.width}×${S.encK.height}`;
+
+  // Update key badge
+  $('keyBadge').textContent='KEY: טעון ✓';
+  $('keyBadge').className='key-badge ok';
+
+  $('encBtn').disabled=false;
+
+  // Check if Key already has metadata
+  const existing=lsbExtract(S.slot1);
+  if(existing){
+    const p=parseKP(existing);
+    if(p&&p.rl) showKeyMeta(p);
+  }
+
+  updateCap();
+  updateMeter(0,S.rl.maxA);
+
+  $('intro').style.transition='opacity .8s';
+  $('intro').style.opacity='0';
+  setTimeout(()=>{$('intro').style.display='none';$('app').classList.add('on');},800);
+}
+
+function backToIntro(){
+  $('app').classList.remove('on');
+  $('intro').style.display='flex';
+  $('intro').style.opacity='0';
+  setTimeout(()=>{$('intro').style.transition='opacity .5s';$('intro').style.opacity='1';},10);
+}
+
+// ══════════════════════════════════════════════════════
+// LSB CORE
+// ══════════════════════════════════════════════════════
+function lsbCap(id){return Math.floor((id.data.length/4*6-32)/8)}
+
+function lsbEmbed(id,bytes){
+  let bits='';
+  for(let i=31;i>=0;i--) bits+=((bytes.length>>i)&1);
+  for(const b of bytes) for(let i=7;i>=0;i--) bits+=((b>>i)&1);
+  const px=new Uint8ClampedArray(id.data);
+  let bi=0,total=bits.length;
+  for(let i=0;i<px.length&&bi<total;i++){
+    if((i+1)%4===0) continue;
+    const b1=bi<total?+bits[bi++]:0;
+    const b2=bi<total?+bits[bi++]:0;
+    px[i]=(px[i]&0b11111100)|(b1<<1)|b2;
+  }
+  return px;
+}
+
+function lsbExtract(id){
+  const px=id.data;let bits='';
+  for(let i=0;i<px.length;i++){
+    if((i+1)%4===0) continue;
+    bits+=((px[i]>>1)&1);bits+=(px[i]&1);
+  }
+  let len=0;
+  for(let i=0;i<32;i++) len=(len<<1)|+bits[i];
+  if(len<=0||len*8+32>bits.length) return null;
+  const out=new Uint8Array(len);
+  for(let i=0;i<len;i++){
+    let byte=0;
+    for(let j=0;j<8;j++) byte=(byte<<1)|+bits[32+i*8+j];
+    out[i]=byte;
+  }
+  return out;
+}
+
+// ══════════════════════════════════════════════════════
+// AES-256-GCM
+// ══════════════════════════════════════════════════════
+async function aesGen(){return await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt'])}
+async function aesExport(k){return new Uint8Array(await crypto.subtle.exportKey('raw',k))}
+async function aesImport(raw){return await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt','decrypt'])}
+async function aesEnc(key,data){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,data);
+  const out=new Uint8Array(12+ct.byteLength);
+  out.set(iv,0);out.set(new Uint8Array(ct),12);return out;
+}
+async function aesDec(key,packed){
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:packed.slice(0,12)},key,packed.slice(12));
+  return new Uint8Array(plain);
+}
+
+// ══════════════════════════════════════════════════════
+// KEY PAYLOAD
+// ══════════════════════════════════════════════════════
+function buildKP(keyRaw,rl,at,name,mime){
+  return new TextEncoder().encode(JSON.stringify({v:'4',k:Array.from(keyRaw),rl,at,n:name,m:mime}));
+}
+function parseKP(bytes){try{return JSON.parse(new TextDecoder().decode(bytes))}catch{return null}}
+
+// ══════════════════════════════════════════════════════
+// CAPACITY
+// ══════════════════════════════════════════════════════
+function fmtSz(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(2)+'MB'}
+
+function updateCap(){
+  if(!S.encC){$('capTxt').textContent='—';return}
+  const max=lsbCap(S.encC);
+  let used=0;
+  if(S.payloadType==='text') used=new TextEncoder().encode($('secretTxt').value).length;
+  else used=S.payloadBytes?S.payloadBytes.length:0;
+  const enc=used+28;
+  const pct=Math.min(enc/max*100,100);
+  const fill=$('capFill');
+  fill.style.width=pct+'%';
+  fill.style.background=pct>90?'#ef4444':pct>70?'#f59e0b':'var(--gold)';
+  $('capTxt').textContent=`${fmtSz(enc)} / ${fmtSz(max)} · פנוי: ${fmtSz(Math.max(max-enc,0))}`;
+}
+
+// ══════════════════════════════════════════════════════
+// RL CONTROLS
+// ══════════════════════════════════════════════════════
+const RL_B={maxA:[2,20],win:[5,120],lock:[5,120]};
+function adj(k,d){
+  const[mn,mx]=RL_B[k];S.rl[k]=Math.max(mn,Math.min(mx,S.rl[k]+d));
+  const ids={maxA:'vMaxA',win:'vWin',lock:'vLock'};
+  $(ids[k]).textContent=S.rl[k];
+}
+
+// ══════════════════════════════════════════════════════
+// LOAD IMAGES INSIDE APP
+// ══════════════════════════════════════════════════════
+function loadEnc(inp){
+  const f=inp.files[0];if(!f) return;
+  loadImgFile(f,(id)=>{
+    S.encC=id;
+    renderImgData(id,'encCCv');
+    $('encCPrev').classList.add('on');
+    $('encCMeta').textContent=`${id.width}×${id.height} · cap: ${fmtSz(lsbCap(id))}`;
+    updateCap();
+  });
+}
+
+function loadDec(type,inp){
+  const f=inp.files[0];if(!f) return;
+  loadImgFile(f,(id)=>{
+    if(type==='c'){
+      S.decC=id;
+      renderImgData(id,'decCCv');
+      $('decCPrev').classList.add('on');
+      $('decCMeta').textContent=`${id.width}×${id.height}`;
+    } else {
+      S.decK=id;
+      renderImgData(id,'decKCv');
+      $('decKPrev').classList.add('on');
+      $('decKMeta').textContent=`${id.width}×${id.height}`;
+      const b=lsbExtract(id);
+      if(b){const p=parseKP(b);if(p&&p.rl)showKeyMeta(p);}
+    }
+    checkDecRdy();
+  });
+}
+
+function loadImgFile(file,cb){
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cv=$('wCv');cv.width=img.width;cv.height=img.height;
+      cv.getContext('2d').drawImage(img,0,0);
+      cb(cv.getContext('2d').getImageData(0,0,img.width,img.height));
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function renderImgData(id,cvId){
+  const cv=$(cvId);cv.width=id.width;cv.height=id.height;
+  cv.getContext('2d').putImageData(id,0,0);
+}
+
+function checkDecRdy(){$('decBtn').disabled=!(S.decC&&S.decK)}
+
+// ══════════════════════════════════════════════════════
+// PAYLOAD TYPE + FILE
+// ══════════════════════════════════════════════════════
+function setPT(type,btn){
+  S.payloadType=type;
+  document.querySelectorAll('.pt-b').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  $('ptText').style.display=type==='text'?'block':'none';
+  $('ptFile').style.display=type==='file'?'block':'none';
+  updateCap();
+}
+
+function onPayloadFile(inp){
+  const f=inp.files[0];if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    S.payloadBytes=new Uint8Array(e.target.result);
+    S.payloadMime=f.type||'application/octet-stream';
+    S.payloadName=f.name;
+    const fi=$('fileInfo');
+    fi.textContent=`${f.name} · ${fmtSz(f.size)}`;
+    fi.classList.add('on');
+    updateCap();
+  };
+  r.readAsArrayBuffer(f);
+}
+
+// ══════════════════════════════════════════════════════
+// KEY META DISPLAY
+// ══════════════════════════════════════════════════════
+function showKeyMeta(p){
+  const rl=p.rl,at=p.at||[],now=Date.now();
+  const recent=at.filter(t=>now-t<rl.win*1000);
+  const blocked=recent.length>=rl.maxA;
+  $('metaBox').classList.add('on');
+  $('mRL').textContent=`${rl.maxA}/${rl.win}s/${rl.lock}min`;
+  $('mLast').textContent=at.length?new Date(at[at.length-1]).toLocaleTimeString('he-IL'):'-';
+  const cnt=$('mCnt');cnt.textContent=`${recent.length}/${rl.maxA}`;
+  cnt.className='meta-v'+(blocked?' bad':recent.length>rl.maxA*.6?' warn':' ok');
+  const st=$('mStat');st.textContent=blocked?'⛔ חסום':'✓ פתוח';
+  st.className='meta-v'+(blocked?' bad':' ok');
+  updateMeter(recent.length,rl.maxA);
+}
+
+// ══════════════════════════════════════════════════════
+// METER
+// ══════════════════════════════════════════════════════
+function updateMeter(n,max){
+  const m=$('meter');m.innerHTML='';
+  for(let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='m-d'+(i<n?(n>=max?' red':' lit'):'');
+    m.appendChild(d);
+  }
+  $('meterLbl').textContent=`${n}/${max}`;
+}
+
+// ══════════════════════════════════════════════════════
+// ENCODE
+// ══════════════════════════════════════════════════════
+async function encodeAll(){
+  setSt('encSt','','');
+  if(!S.encC||!S.encK){setSt('encSt','חסרות תמונות.','err');return}
+
+  let rawBytes;
+  if(S.payloadType==='text'){
+    const txt=$('secretTxt').value;
+    if(!txt){setSt('encSt','אין תוכן להצפנה.','err');return}
+    rawBytes=new TextEncoder().encode(txt);
+    S.payloadMime='text/plain';S.payloadName='message.txt';
+  } else {
+    if(!S.payloadBytes){setSt('encSt','לא נבחר קובץ.','err');return}
+    rawBytes=S.payloadBytes;
+  }
+
+  const maxC=lsbCap(S.encC),maxK=lsbCap(S.encK);
+
+  let aesKey,keyRaw,ciphertext;
+  try{
+    aesKey=await aesGen();keyRaw=await aesExport(aesKey);
+    ciphertext=await aesEnc(aesKey,rawBytes);
+  }catch(e){setSt('encSt','שגיאת AES: '+e.message,'err');return}
+
+  if(ciphertext.length>maxC){setSt('encSt',`קובץ גדול מדי. קיבולת: ${fmtSz(maxC)}. נדרש: ${fmtSz(ciphertext.length)}`,'err');return}
+
+  // Read existing RL data from Key image if any
+  const existingBytes=lsbExtract(S.encK);
+  const existingP=existingBytes?parseKP(existingBytes):null;
+  const at=(existingP&&existingP.at)||[];
+
+  const kp=buildKP(keyRaw,S.rl,at,S.payloadName,S.payloadMime);
+  if(kp.length>maxK){setSt('encSt',`Key קטן מדי. נדרש: ${fmtSz(kp.length)}. יש: ${fmtSz(maxK)}`,'err');return}
+
+  // Embed
+  const cPx=lsbEmbed(S.encC,ciphertext);
+  S.outCURL=renderPx(cPx,S.encC.width,S.encC.height,'outCCv');
+  $('outCPrev').classList.add('on');
+
+  const kPx=lsbEmbed(S.encK,kp);
+  S.outKURL=renderPx(kPx,S.encK.width,S.encK.height,'outKCv');
+  $('outKPrev').classList.add('on');
+
+  // Update encK state so subsequent encodes reuse same key image
+  const tmp=$('outKCv');
+  S.encK=tmp.getContext('2d').getImageData(0,0,tmp.width,tmp.height);
+
+  $('dlCBtn').disabled=false;$('dlKBtn').disabled=false;
+  setSt('encSt',`✓ הצפנה הושלמה!\n${S.payloadName} · ${fmtSz(rawBytes.length)}\nAES-256-GCM · Rate Limit: ${S.rl.maxA}/${S.rl.win}s/${S.rl.lock}min`,'ok');
+  updateCap();
+}
+
+// ══════════════════════════════════════════════════════
+// DECODE
+// ══════════════════════════════════════════════════════
+async function decodeAll(){
+  setSt('decSt','','');
+  if(Date.now()<S.lockUntil){setSt('decSt','⛔ חסום — המתן לסיום הספירה.','err');return}
+  if(!S.decC||!S.decK){setSt('decSt','חסרות תמונות.','err');return}
+
+  const kBytes=lsbExtract(S.decK);
+  if(!kBytes){setSt('decSt','לא נמצא מפתח ב-Key image.','err');daliMismatch();return}
+  const kp=parseKP(kBytes);
+  if(!kp||!kp.k||!kp.rl){setSt('decSt','Key image לא תקין.','err');daliMismatch();return}
+
+  const rl=kp.rl,at=kp.at||[],now=Date.now();
+  const recent=at.filter(t=>now-t<rl.win*1000);
+  updateMeter(recent.length+1,rl.maxA);
+
+  if(recent.length>=rl.maxA){
+    const ua=[...at,now];writeUpdKey(kp,ua);
+    triggerLock(rl.lock,ua);
+    setSt('decSt',`⛔ יותר מדי ניסיונות! חסום ל-${rl.lock} דקות.`,'err');
+    return;
+  }
+
+  const cBytes=lsbExtract(S.decC);
+  if(!cBytes){setSt('decSt','לא נמצאו נתונים ב-Carrier.','err');daliMismatch();return}
+
+  let plain;
+  try{
+    const k=await aesImport(new Uint8Array(kp.k));
+    plain=await aesDec(k,cBytes);
+  }catch(e){
+    setSt('decSt','שגיאת AES – Key לא תואם או Carrier פגום.','err');
+    daliMismatch();return;
+  }
+
+  const ua=[...at,now];writeUpdKey(kp,ua);
+  const remaining=rl.maxA-recent.length-1;
+
+  const mime=kp.m||'text/plain',name=kp.n||'file';
+  $('decResultWrap').style.display='block';
+
+  if(mime==='text/plain'){
+    $('rText').style.display='block';$('rFile').style.display='none';
+    $('rTextBox').textContent=new TextDecoder().decode(plain);
+  } else {
+    $('rText').style.display='none';$('rFile').style.display='block';
+    const blob=new Blob([plain],{type:mime});
+    S.extractedBlob=blob;S.extractedMime=mime;S.extractedName=name;
+    const url=URL.createObjectURL(blob);
+    if(mime.startsWith('image/')){$('rImg').src=url;$('rImg').classList.add('on');}
+    else $('rImg').classList.remove('on');
+    $('dlResBtn').disabled=false;
+  }
+
+  showKeyMeta({rl,at:ua});
+  setSt('decSt',`✓ פוענח! · ${name} · ${fmtSz(plain.length)}\nנותרו ${remaining} ניסיונות`,'ok');
+  // Unlock key migration after successful decode
+  unlockMigration({...kp, at:ua});
+}
+
+function writeUpdKey(kp,at){
+  const np={...kp,at};
+  const npB=new TextEncoder().encode(JSON.stringify(np));
+  const px=lsbEmbed(S.decK,npB);
+  const cv=$('decKCv');
+  cv.getContext('2d').putImageData(new ImageData(px,S.decK.width,S.decK.height),0,0);
+  S.decK=cv.getContext('2d').getImageData(0,0,S.decK.width,S.decK.height);
+  S.updKURL=cv.toDataURL('image/png');
+  $('dlUpdBtn').style.display='block';$('dlUpdBtn').disabled=false;
+}
+
+// ══════════════════════════════════════════════════════
+// DALI MISMATCH EFFECT
+// ══════════════════════════════════════════════════════
+function daliMismatch(){
+  // Melt the two decode preview canvases
+  ['decCCv','decKCv'].forEach(id=>{
+    const cv=$(id);if(!cv) return;
+    const r=cv.getBoundingClientRect();
+    const frag=document.createElement('canvas');
+    frag.width=r.width;frag.height=r.height;
+    frag.className='dali-frag';
+    frag.style.cssText=`left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;`;
+    frag.getContext('2d').drawImage(cv,0,0,r.width,r.height);
+    document.body.appendChild(frag);
+    setTimeout(()=>frag.remove(),3200);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// LOCKDOWN
+// ══════════════════════════════════════════════════════
+function triggerLock(min,at){
+  S.lockUntil=Date.now()+min*60000;
+  $('lsCount').textContent=at.length;
+  $('lockScreen').classList.add('on');
+  startCountdown(min*60);
+}
+function startCountdown(sec){
+  if(S.lockTmr) clearInterval(S.lockTmr);
+  let rem=sec;
+  S.lockTmr=setInterval(()=>{
+    rem--;
+    if(rem<=0){clearInterval(S.lockTmr);$('lockScreen').classList.remove('on');S.lockUntil=0;return}
+    const m=String(Math.floor(rem/60)).padStart(2,'0');
+    const s=String(rem%60).padStart(2,'0');
+    $('lsTimer').textContent=`${m}:${s}`;
+    $('lsFill').style.width=(rem/sec*100)+'%';
+  },1000);
+}
+
+// ══════════════════════════════════════════════════════
+// DOWNLOAD
+// ══════════════════════════════════════════════════════
+function renderPx(px,w,h,cvId){
+  const cv=$(cvId);cv.width=w;cv.height=h;
+  cv.getContext('2d').putImageData(new ImageData(px,w,h),0,0);
+  return cv.toDataURL('image/png');
+}
+function dl(t){
+  const m={c:[S.outCURL,'illusion_carrier.png'],k:[S.outKURL,'illusion_key.png'],uk:[S.updKURL,'illusion_key_updated.png']};
+  const[url,name]=m[t];if(!url) return;
+  const a=document.createElement('a');a.href=url;a.download=name;a.click();
+}
+function dlExtracted(){
+  if(!S.extractedBlob) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(S.extractedBlob);
+  a.download=S.extractedName;a.click();
+}
+function copyResult(){
+  navigator.clipboard.writeText($('rTextBox').textContent).then(()=>{
+    const b=document.querySelector('.copy-btn');b.textContent='הועתק ✓';
+    setTimeout(()=>b.textContent='העתק ללוח',1800);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// VAULT (in-memory only)
+// ══════════════════════════════════════════════════════
+function renderVault(){
+  const list=$('vaultList');
+  list.innerHTML='';
+  if(!S.vault.length){
+    list.innerHTML='<div style="padding:1rem;font-family:var(--mono);font-size:.6rem;color:rgba(201,168,76,.25);text-align:center">הכספת ריקה</div>';
+    return;
+  }
+  S.vault.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.className='vault-item'+(S.vaultSel===i?' selected':'');
+    div.innerHTML=`<div><div class="v-name">${item.name||'—'}</div><div class="v-date">${item.date||''}</div></div>
+      <button class="vault-del" onclick="delVault(${i},event)">×</button>`;
+    div.onclick=(e)=>{if(e.target.tagName!=='BUTTON'){S.vaultSel=i;renderVault();openVaultEntry(i);}};
+    list.appendChild(div);
+  });
+
+  // refresh vault pick in encode
+  const sel=$('vaultPick');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— בחר רשומה מהכספת —</option>';
+  S.vault.forEach((item,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i;opt.textContent=item.name||`רשומה ${i+1}`;
+    sel.appendChild(opt);
+  });
+  sel.value=cur;
+}
+
+function newVaultEntry(){
+  S.vault.push({name:'רשומה חדשה',content:'',date:new Date().toLocaleDateString('he-IL')});
+  S.vaultSel=S.vault.length-1;
+  renderVault();
+  openVaultEntry(S.vaultSel);
+}
+
+function openVaultEntry(i){
+  const item=S.vault[i];
+  $('vaultEditor').innerHTML=`
+    <div class="vault-name-row">
+      <input class="input-field" id="vNameInp" value="${escHtml(item.name||'')}" oninput="S.vault[${i}].name=this.value;renderVault()" placeholder="שם הרשומה...">
+    </div>
+    <label class="lbl" style="margin-top:.3rem">תוכן (טקסט, סיסמה, הערות...)</label>
+    <textarea id="vContentInp" style="min-height:160px;direction:rtl" oninput="S.vault[${i}].content=this.value" placeholder="הכנס סיסמה, הערה, או כל מידע...">${escHtml(item.content||'')}</textarea>
+    <div style="display:flex;gap:.4rem">
+      <button class="btn btn-gold" onclick="copyVaultItem(${i})" style="margin-bottom:0"><span>העתק לפתח הצפנה</span></button>
+      <button class="copy-btn" onclick="copyVaultContent(${i})" style="flex-shrink:0">העתק ללוח</button>
+    </div>
+    <div class="note" style="margin-top:.5rem">⚠ מידע זה קיים בזיכרון האפליקציה בלבד.<br>לא נשמר בקבצים, cookies, או localStorage.</div>
+  `;
+}
+
+function copyVaultItem(i){
+  const item=S.vault[i];
+  if(!item) return;
+  $('secretTxt').value=item.content||'';
+  setPT('text',document.querySelector('.pt-b'));
+  updateCap();
+  showPanel('pEncode',document.querySelector('.nav-btn.active'));
+  setSt('encSt',`✓ טקסט "${item.name}" נטען ממהכספת.`,'ok');
+}
+
+function copyVaultContent(i){
+  navigator.clipboard.writeText(S.vault[i].content||'');
+}
+
+function delVault(i,e){
+  e.stopPropagation();
+  S.vault.splice(i,1);
+  if(S.vaultSel>=S.vault.length) S.vaultSel=S.vault.length-1;
+  renderVault();
+  if(S.vault.length&&S.vaultSel>=0) openVaultEntry(S.vaultSel);
+  else $('vaultEditor').innerHTML='<div class="note" style="text-align:center;padding:2rem">בחר רשומה או צור חדשה</div>';
+}
+
+function pickFromVault(){
+  const sel=$('vaultPick');
+  const idx=parseInt(sel.value);
+  if(isNaN(idx)||!S.vault[idx]) return;
+  $('secretTxt').value=S.vault[idx].content||'';
+  setPT('text',document.querySelectorAll('.pt-b')[0]);
+  updateCap();
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ══════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(id==='pVault') renderVault();
+}
+
+// ══════════════════════════════════════════════════════
+// STATUS
+// ══════════════════════════════════════════════════════
+function setSt(id,msg,type){
+  const el=$(id);el.textContent=msg;
+  el.className='st'+(msg?' on':'')+' '+type;
+}
+
+// ══════════════════════════════════════════════════════
+// DRAG & DROP
+// ══════════════════════════════════════════════════════
+[['slot1Frame','slot1File'],['slot2Frame','slot2File'],
+ ['encCZ','encCF'],['encKPrev','encKCv']].forEach(([z,inp])=>{
+  const zone=$(z);if(!zone) return;
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.opacity='.5';});
+  zone.addEventListener('dragleave',()=>zone.style.opacity='1');
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();zone.style.opacity='1';
+    const f=e.dataTransfer.files[0];if(!f) return;
+    const input=$(inp);if(!input||input.tagName!=='INPUT') return;
+    const dt=new DataTransfer();dt.items.add(f);input.files=dt.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+
+// ══════════════════════════════════════════════════════
+// WAV STEGANOGRAPHY ENGINE
+// Format: Standard PCM WAV, 16-bit samples
+// LSB embedding: 2 bits per 16-bit sample (one channel)
+// Header: 64-bit magic + 32-bit payload length + 8-bit type flags
+// Payload wrapper JSON: {v, type, date, files:[{name,mime,data:[...]}]}
+// ══════════════════════════════════════════════════════
+
+const WAV_MAGIC = [0x49,0x4C,0x4C,0x55,0x53,0x49,0x4F,0x4E]; // "ILLUSION"
+
+const wavState = {
+  baseArrayBuffer: null,   // original WAV file bytes
+  baseSampleRate: 0,
+  baseNumChannels: 0,
+  baseBitsPerSample: 0,
+  baseDataOffset: 0,       // byte offset where PCM data starts
+  baseDataLength: 0,
+  bkpType: 'key',          // 'key' | 'carrier' | 'both'
+  outputWavURL: null,
+  restoreArrayBuffer: null,
+};
+
+function setWavBkpType(type, btn){
+  wavState.bkpType = type;
+  document.querySelectorAll('#wavBkpTypeKey,#wavBkpTypeCarrier,#wavBkpTypeBoth')
+    .forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  updateWavCapacity();
+}
+
+// ── Parse WAV header ──────────────────────────────────
+function parseWavHeader(buf){
+  const view = new DataView(buf);
+  const dec = (off,len) => String.fromCharCode(...new Uint8Array(buf,off,len));
+
+  if(dec(0,4) !== 'RIFF' || dec(8,4) !== 'WAVE')
+    throw new Error('לא קובץ WAV תקין');
+
+  let offset = 12;
+  let fmt = null, dataOffset = 0, dataLen = 0;
+
+  while(offset < buf.byteLength - 8){
+    const chunkId = dec(offset, 4);
+    const chunkSize = view.getUint32(offset+4, true);
+    if(chunkId === 'fmt '){
+      fmt = {
+        audioFormat:    view.getUint16(offset+8,  true),
+        numChannels:    view.getUint16(offset+10, true),
+        sampleRate:     view.getUint32(offset+12, true),
+        bitsPerSample:  view.getUint16(offset+22, true),
+      };
+    } else if(chunkId === 'data'){
+      dataOffset = offset + 8;
+      dataLen    = chunkSize;
+      break;
+    }
+    offset += 8 + chunkSize;
+    if(chunkSize % 2 !== 0) offset++; // word-align
+  }
+
+  if(!fmt)  throw new Error('לא נמצא chunk fmt ב-WAV');
+  if(!dataLen) throw new Error('לא נמצא chunk data ב-WAV');
+  if(fmt.audioFormat !== 1) throw new Error('נדרש WAV PCM (לא compressed). פורמט: '+fmt.audioFormat);
+  if(fmt.bitsPerSample !== 16) throw new Error('נדרש WAV 16-bit. נמצא: '+fmt.bitsPerSample+'-bit');
+
+  return { ...fmt, dataOffset, dataLen };
+}
+
+// ── WAV capacity in bytes (2 bits per 16-bit sample) ──
+function wavCapBytes(dataLen){
+  const totalSamples = Math.floor(dataLen / 2); // 16-bit = 2 bytes/sample
+  const totalBits    = totalSamples * 2;         // 2 LSBs per sample
+  const headerBits   = (WAV_MAGIC.length + 4) * 8; // magic(8) + length(4)
+  return Math.floor((totalBits - headerBits) / 8);
+}
+
+// ── Embed bytes into WAV PCM data ──────────────────────
+function wavEmbed(srcBuf, payloadBytes){
+  // Build bit stream: MAGIC(64) + LENGTH(32) + DATA
+  const header = new Uint8Array([
+    ...WAV_MAGIC,
+    (payloadBytes.length >>> 24) & 0xFF,
+    (payloadBytes.length >>> 16) & 0xFF,
+    (payloadBytes.length >>>  8) & 0xFF,
+     payloadBytes.length         & 0xFF,
+  ]);
+  const stream = new Uint8Array(header.length + payloadBytes.length);
+  stream.set(header, 0);
+  stream.set(payloadBytes, header.length);
+
+  // Convert stream to bit array
+  const bits = [];
+  for(const byte of stream)
+    for(let i = 7; i >= 0; i--)
+      bits.push((byte >> i) & 1);
+
+  // Clone buffer
+  const out = srcBuf.slice(0);
+  const view = new DataView(out);
+  const { dataOffset, dataLen } = wavState;
+  const maxSamples = Math.floor(dataLen / 2);
+
+  let bi = 0;
+  for(let s = 0; s < maxSamples && bi < bits.length - 1; s++){
+    const byteOff = dataOffset + s * 2;
+    let sample = view.getInt16(byteOff, true);
+    // Embed 2 bits into 2 LSBs
+    const b1 = bi < bits.length ? bits[bi++] : 0;
+    const b2 = bi < bits.length ? bits[bi++] : 0;
+    sample = (sample & ~3) | (b1 << 1) | b2;
+    view.setInt16(byteOff, sample, true);
+  }
+  return out;
+}
+
+// ── Extract bytes from WAV PCM data ───────────────────
+function wavExtract(buf){
+  const hdr = parseWavHeader(buf);
+  const view = new DataView(buf);
+  const maxSamples = Math.floor(hdr.dataLen / 2);
+
+  // Extract all bits
+  const bits = [];
+  for(let s = 0; s < maxSamples; s++){
+    const sample = view.getInt16(hdr.dataOffset + s*2, true);
+    bits.push((sample >> 1) & 1);
+    bits.push(sample & 1);
+  }
+
+  function readByte(startBit){
+    let v = 0;
+    for(let i = 0; i < 8; i++) v = (v << 1) | (bits[startBit+i] || 0);
+    return v;
+  }
+
+  // Check magic
+  const MAGIC_BITS = WAV_MAGIC.length * 8;
+  for(let i = 0; i < WAV_MAGIC.length; i++){
+    if(readByte(i*8) !== WAV_MAGIC[i]) return null; // no embed found
+  }
+
+  // Read 32-bit length
+  let len = 0;
+  for(let i = 0; i < 4; i++) len = (len << 8) | readByte(MAGIC_BITS + i*8);
+
+  if(len <= 0 || len * 8 + MAGIC_BITS + 32 > bits.length) return null;
+
+  const DATA_START = MAGIC_BITS + 32;
+  const out = new Uint8Array(len);
+  for(let i = 0; i < len; i++) out[i] = readByte(DATA_START + i*8);
+  return out;
+}
+
+// ── Build WAV payload wrapper ─────────────────────────
+function buildWavPayload(type, files){
+  // files: [{name, mime, data: Uint8Array}]
+  const obj = {
+    v: '1',
+    app: 'IllusionEffect',
+    type,
+    date: new Date().toISOString(),
+    files: files.map(f => ({
+      name: f.name,
+      mime: f.mime,
+      data: Array.from(f.data),  // Uint8Array → plain array for JSON
+    })),
+  };
+  return new TextEncoder().encode(JSON.stringify(obj));
+}
+
+function parseWavPayload(bytes){
+  try { return JSON.parse(new TextDecoder().decode(bytes)); }
+  catch(e){ return null; }
+}
+
+// ── Collect PNG bytes from canvas ─────────────────────
+function canvasToPngBytes(cvId){
+  return new Promise(resolve => {
+    const cv = $(cvId);
+    cv.toBlob(blob => {
+      blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf)));
+    }, 'image/png');
+  });
+}
+
+// ── Update capacity display ───────────────────────────
+async function updateWavCapacity(){
+  if(!wavState.baseArrayBuffer) return;
+  const cap = wavCapBytes(wavState.baseDataLength);
+
+  // Estimate payload size
+  let estSize = 0;
+  if(wavState.bkpType === 'key' || wavState.bkpType === 'both'){
+    if(S.encK){ const b = await canvasToPngBytes('encKCv'); estSize += b.length; }
+  }
+  if(wavState.bkpType === 'carrier' || wavState.bkpType === 'both'){
+    if(S.encC){ const b = await canvasToPngBytes('encCCv'); estSize += b.length; }
+  }
+  // Add JSON overhead ~200 bytes
+  estSize += 200;
+
+  const pct = Math.min(estSize/cap*100, 100);
+  const fill = $('wavCapFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct>90?'#ef4444':pct>70?'#f59e0b':'var(--sky)';
+  $('wavCapTxt').textContent = `נדרש: ${fmtSz(estSize)} / קיבולת: ${fmtSz(cap)} · ${pct.toFixed(1)}%`;
+  $('wavBkpCapInfo').style.display = 'block';
+  $('wavBkpBtn').disabled = pct > 100;
+}
+
+// ── Load base WAV ─────────────────────────────────────
+function loadWavBase(inp){
+  const f = inp.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const buf = e.target.result;
+      const hdr = parseWavHeader(buf);
+      wavState.baseArrayBuffer  = buf;
+      wavState.baseSampleRate   = hdr.sampleRate;
+      wavState.baseNumChannels  = hdr.numChannels;
+      wavState.baseBitsPerSample= hdr.bitsPerSample;
+      wavState.baseDataOffset   = hdr.dataOffset;
+      wavState.baseDataLength   = hdr.dataLen;
+
+      const cap = wavCapBytes(hdr.dataLen);
+      const dur = hdr.dataLen / (hdr.sampleRate * hdr.numChannels * 2);
+      const info = $('wavBaseInfo');
+      info.style.display = 'block';
+      info.textContent = `${f.name} · ${fmtSz(f.size)} · ${dur.toFixed(1)}s · ${hdr.sampleRate}Hz · ${hdr.numChannels}ch · קיבולת: ${fmtSz(cap)}`;
+
+      drawWaveform(buf, hdr);
+      $('wavWaveform').classList.add('on');
+      $('wavBkpBtn').disabled = false;
+      updateWavCapacity();
+    } catch(err){
+      setSt('wavBkpSt', 'שגיאה בקריאת WAV: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+// ── Draw waveform preview ─────────────────────────────
+function drawWaveform(buf, hdr){
+  const cv = $('wavWaveformCv');
+  const W = cv.offsetWidth || 400, H = 48;
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const view = new DataView(buf);
+  const totalSamples = Math.floor(hdr.dataLen / 2);
+  const step = Math.ceil(totalSamples / W);
+
+  ctx.strokeStyle = 'rgba(122,179,204,.6)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+
+  for(let x = 0; x < W; x++){
+    let min = 32767, max = -32768;
+    for(let s = 0; s < step; s++){
+      const idx = (x * step + s);
+      if(idx >= totalSamples) break;
+      const v = view.getInt16(hdr.dataOffset + idx*2, true);
+      if(v < min) min = v; if(v > max) max = v;
+    }
+    const y1 = H/2 - (max/32768)*(H/2-2);
+    const y2 = H/2 - (min/32768)*(H/2-2);
+    x===0 ? ctx.moveTo(x, y1) : ctx.lineTo(x, y1);
+    ctx.lineTo(x, y2);
+  }
+  ctx.stroke();
+
+  // Center line
+  ctx.strokeStyle = 'rgba(201,168,76,.2)';
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+}
+
+// ── Create WAV backup ─────────────────────────────────
+async function createWavBackup(){
+  if(!wavState.baseArrayBuffer){ setSt('wavBkpSt','טען קובץ WAV בסיס תחילה.','err'); return; }
+
+  const prog = $('wavBkpProgress');
+  const fill = $('wavBkpProgressFill');
+  prog.classList.add('on'); fill.style.width = '10%';
+  setSt('wavBkpSt','מכין נתונים...','warn');
+
+  const files = [];
+
+  try {
+    if(wavState.bkpType === 'key' || wavState.bkpType === 'both'){
+      if(!S.encK){ setSt('wavBkpSt','אין Key image טעון באפליקציה.','err'); prog.classList.remove('on'); return; }
+      const pngBytes = await canvasToPngBytes('encKCv');
+      files.push({ name:'illusion_key.png', mime:'image/png', data: pngBytes });
+    }
+    fill.style.width = '40%';
+
+    if(wavState.bkpType === 'carrier' || wavState.bkpType === 'both'){
+      if(!S.encC){ setSt('wavBkpSt','אין Carrier image טעון באפליקציה.','err'); prog.classList.remove('on'); return; }
+      const pngBytes = await canvasToPngBytes('encCCv');
+      files.push({ name:'illusion_carrier.png', mime:'image/png', data: pngBytes });
+    }
+    fill.style.width = '65%';
+
+    const payload = buildWavPayload(wavState.bkpType, files);
+    const cap = wavCapBytes(wavState.baseDataLength);
+
+    if(payload.length > cap){
+      setSt('wavBkpSt', `הקבצים גדולים מדי! נדרש: ${fmtSz(payload.length)}, קיבולת: ${fmtSz(cap)}.
+נסה WAV ארוך יותר.`, 'err');
+      prog.classList.remove('on'); return;
+    }
+
+    fill.style.width = '80%';
+    const outBuf = wavEmbed(wavState.baseArrayBuffer, payload);
+    fill.style.width = '100%';
+
+    const blob = new Blob([outBuf], {type:'audio/wav'});
+    wavState.outputWavURL = URL.createObjectURL(blob);
+
+    const totalSize = files.reduce((a,f)=>a+f.data.length,0);
+    setSt('wavBkpSt',
+      `✓ גיבוי WAV נוצר בהצלחה!
+קבצים: ${files.map(f=>f.name).join(', ')}
+גודל נתונים: ${fmtSz(totalSize)} → ${fmtSz(payload.length)} (JSON)
+נקודת גיבוי: ${new Date().toLocaleString('he-IL')}`,
+      'ok'
+    );
+    $('wavDlBtn').disabled = false;
+    $('wavDlBtn').style.display = 'block';
+
+  } catch(err){
+    setSt('wavBkpSt','שגיאה: '+err.message,'err');
+  }
+  setTimeout(()=>prog.classList.remove('on'), 1200);
+}
+
+function dlWavBackup(){
+  if(!wavState.outputWavURL) return;
+  const a = document.createElement('a');
+  a.href = wavState.outputWavURL;
+  a.download = 'illusion_backup.wav';
+  a.click();
+}
+
+// ── Load restore WAV ──────────────────────────────────
+function loadWavRestore(inp){
+  const f = inp.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    wavState.restoreArrayBuffer = e.target.result;
+    const info = $('wavRestoreInfo');
+    info.style.display='block';
+    info.textContent = f.name + ' · ' + fmtSz(f.size);
+
+    // Peek metadata
+    try {
+      const bytes = wavExtract(wavState.restoreArrayBuffer);
+      if(bytes){
+        const p = parseWavPayload(bytes);
+        if(p){
+          $('wavRestoreMeta').style.display = 'block';
+          $('wavMetaType').textContent = p.type==='both'?'Key + Carrier':p.type==='key'?'Key Image':'Carrier Image';
+          $('wavMetaSize').textContent = fmtSz(bytes.length);
+          $('wavMetaDate').textContent = p.date ? new Date(p.date).toLocaleString('he-IL') : '—';
+          $('wavMetaVer').textContent = 'IllusionEffect v'+p.v;
+          setSt('wavRestoreSt','✓ נתוני גיבוי זוהו. לחץ שחזר.','ok');
+          $('wavRestoreBtn').disabled = false;
+          return;
+        }
+      }
+      setSt('wavRestoreSt','לא נמצאו נתוני גיבוי בקובץ WAV זה.','err');
+    } catch(err){
+      setSt('wavRestoreSt','שגיאה בניתוח WAV: '+err.message,'err');
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+// ── Restore from WAV ──────────────────────────────────
+async function restoreFromWav(){
+  if(!wavState.restoreArrayBuffer){ setSt('wavRestoreSt','טען קובץ WAV תחילה.','err'); return; }
+
+  const prog = $('wavRestoreProgress');
+  prog.classList.add('on');
+  $('wavRestoreProgressFill').style.width = '20%';
+  setSt('wavRestoreSt','מחלץ נתונים...','warn');
+
+  try {
+    const bytes = wavExtract(wavState.restoreArrayBuffer);
+    if(!bytes){ setSt('wavRestoreSt','לא נמצאו נתונים מוטמעים.','err'); prog.classList.remove('on'); return; }
+
+    $('wavRestoreProgressFill').style.width = '60%';
+    const p = parseWavPayload(bytes);
+    if(!p||!p.files){ setSt('wavRestoreSt','פורמט גיבוי לא תקין.','err'); prog.classList.remove('on'); return; }
+
+    $('wavRestoreProgressFill').style.width = '90%';
+
+    const rows = $('wavRestoreRows');
+    rows.innerHTML = '';
+    $('wavRestoreResults').style.display = 'block';
+
+    for(const file of p.files){
+      const fileBytes = new Uint8Array(file.data);
+      const blob = new Blob([fileBytes], {type: file.mime});
+      const url  = URL.createObjectURL(blob);
+
+      // Determine which app slot this file goes to
+      const isKey = file.name.includes('key');
+      const slotLabel = isKey ? 'Key Image' : 'Carrier Image';
+
+      const row = document.createElement('div');
+      row.className = 'wav-restore-item';
+      row.innerHTML = `
+        <div>
+          <div class="wav-restore-label">${slotLabel}</div>
+          <div class="wav-restore-val">${file.name} · ${fmtSz(fileBytes.length)}</div>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn ${isKey?'btn-rust':'btn-gold'}" onclick="applyRestoredFile('${file.name}','${file.mime}',${JSON.stringify(Array.from(fileBytes))})" style="margin-bottom:0;padding:.4rem .8rem;width:auto">
+            <span>טען לאפליקציה</span>
+          </button>
+          <a href="${url}" download="${file.name}" class="btn btn-sky" style="margin-bottom:0;padding:.4rem .8rem;width:auto;text-decoration:none;display:flex;align-items:center;justify-content:center">
+            <span>הורד PNG</span>
+          </a>
+        </div>
+      `;
+      rows.appendChild(row);
+    }
+
+    setSt('wavRestoreSt', `✓ שוחזרו ${p.files.length} קבצים מגיבוי ${new Date(p.date).toLocaleString('he-IL')}`, 'ok');
+
+  } catch(err){
+    setSt('wavRestoreSt','שגיאה בשחזור: '+err.message,'err');
+  }
+  setTimeout(()=>prog.classList.remove('on'),1200);
+}
+
+// ── Apply restored file to app state ─────────────────
+function applyRestoredFile(name, mime, dataArr){
+  const bytes = new Uint8Array(dataArr);
+  const blob  = new Blob([bytes], {type: mime});
+  const url   = URL.createObjectURL(blob);
+  const img   = new Image();
+  img.onload  = () => {
+    const isKey = name.includes('key');
+    const cvId  = isKey ? 'encKCv' : 'encCCv';
+    const cv    = $(cvId);
+    cv.width = img.width; cv.height = img.height;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    const id = cv.getContext('2d').getImageData(0,0,img.width,img.height);
+
+    if(isKey){
+      S.encK = id; S.decK = id;
+      renderImgData(id,'decKCv');
+      $('encKPrev').classList.add('on');
+      $('decKPrev').classList.add('on');
+      $('encKMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
+      $('decKMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
+      $('keyBadge').textContent = 'KEY: שוחזר מ-WAV ✦';
+      $('keyBadge').className = 'key-badge ok';
+      // Check for RL data
+      const b = lsbExtract(id);
+      if(b){ const p = parseKP(b); if(p&&p.rl) showKeyMeta(p); }
+    } else {
+      S.encC = id; S.decC = id;
+      renderImgData(id,'decCCv');
+      $('encCPrev').classList.add('on');
+      $('decCPrev').classList.add('on');
+      $('encCMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
+      $('decCMeta').textContent = img.width+'x'+img.height+' · שוחזר מ-WAV';
+      updateCap();
+    }
+
+    $('encBtn').disabled = !(S.encC && S.encK);
+    checkDecRdy();
+    setSt('wavRestoreSt', `✓ ${name} הוטען לאפליקציה בהצלחה!`, 'ok');
+  };
+  img.src = url;
+}
+
+
+// ══════════════════════════════════════════════════════
+// KEY MIGRATION
+// ══════════════════════════════════════════════════════
+
+function unlockMigration(kp){
+  S.migrationUnlocked=true;
+  S.migrationKP=JSON.parse(JSON.stringify(kp)); // deep copy
+  const btn=$('migrateKeyBtn');
+  btn.style.display='inline-block';
+  btn.style.borderColor='rgba(122,179,204,.6)';
+  btn.style.color='rgba(122,179,204,.9)';
+}
+
+function openKeyMigrate(){
+  if(!S.migrationUnlocked){
+    setSt('decSt','יש לבצע פענוח מוצלח תחילה כדי לאמת את הזכאות להחלפת המפתח.','err');
+    showPanel('pDecode',document.querySelectorAll('.nav-btn')[1]);
+    return;
+  }
+  S.newKeyImgData=null; S.newKeyURL=null;
+  $('kmNewPrev').classList.remove('on');
+  $('kmMigrateBtn').disabled=true;
+  $('kmWarning').style.display='none';
+  // remove any leftover download buttons from previous migration
+  const old=$('keyMigrateModal').querySelector('.km-dl-row');
+  if(old) old.remove();
+  setSt('kmSt','','');
+  $('kmStep2').className='km-step active';
+  $('kmStep3').className='km-step';
+  $('kmVerifiedTxt').textContent='פענוח מאומת · '+new Date().toLocaleTimeString('he-IL');
+  $('keyMigrateModal').classList.add('on');
+}
+
+function closeKeyMigrate(){
+  $('keyMigrateModal').classList.remove('on');
+}
+
+function loadNewKeyImg(inp){
+  const f=inp.files[0];if(!f) return;
+  loadImgFile(f,(id)=>{
+    S.newKeyImgData=id;
+    const cv=$('kmNewKeyCv');
+    cv.width=id.width;cv.height=id.height;
+    cv.getContext('2d').putImageData(id,0,0);
+    $('kmNewPrev').classList.add('on');
+
+    const cap=lsbCap(id);
+    const kpStr=JSON.stringify(S.migrationKP||{});
+    const needed=new TextEncoder().encode(kpStr).length;
+    $('kmNewMeta').textContent=id.width+'x'+id.height+' · קיבולת: '+fmtSz(cap)+' · נדרש: '+fmtSz(needed);
+
+    $('kmStep2').className='km-step done';
+    $('kmStep3').className='km-step active';
+
+    const warn=$('kmWarning');
+    if(cap<needed){
+      warn.style.display='block';
+      warn.textContent='⚠ התמונה קטנה מדי! קיבולת: '+fmtSz(cap)+', נדרש: '+fmtSz(needed)+'. בחר תמונה גדולה יותר.';
+      $('kmMigrateBtn').disabled=true;
+    } else {
+      warn.style.display='none';
+      $('kmMigrateBtn').disabled=false;
+    }
+  });
+}
+
+function executeMigration(){
+  if(!S.newKeyImgData||!S.migrationKP){setSt('kmSt','שגיאה פנימית — נסה שוב.','err');return;}
+  const kpBytes=new TextEncoder().encode(JSON.stringify(S.migrationKP));
+  if(kpBytes.length>lsbCap(S.newKeyImgData)){setSt('kmSt','תמונה קטנה מדי.','err');return;}
+
+  const newPx=lsbEmbed(S.newKeyImgData,kpBytes);
+  const cv=$('kmNewKeyCv');
+  cv.getContext('2d').putImageData(new ImageData(newPx,S.newKeyImgData.width,S.newKeyImgData.height),0,0);
+  S.newKeyURL=cv.toDataURL('image/png');
+
+  // New image is now active key in app state
+  const ctx=cv.getContext('2d');
+  S.decK=ctx.getImageData(0,0,cv.width,cv.height);
+  S.encK=S.decK;
+
+  // Update decode + encode previews
+  ['decKCv','encKCv'].forEach(id=>{
+    const c=$(id);if(!c) return;
+    c.width=cv.width;c.height=cv.height;
+    c.getContext('2d').putImageData(S.decK,0,0);
+  });
+  $('decKPrev').classList.add('on');
+  $('decKMeta').textContent=cv.width+'x'+cv.height+' · Key מועבר ✦';
+  $('encKPrev').classList.add('on');
+  $('encKMeta').textContent=cv.width+'x'+cv.height+' · Key מועבר ✦';
+  $('keyBadge').textContent='KEY: מועבר ✦';
+  $('keyBadge').className='key-badge ok';
+
+  $('kmStep3').className='km-step done';
+  $('kmMigrateBtn').disabled=true;
+  setSt('kmSt','✓ המפתח הועבר לתמונה החדשה!
+הורד את ה-Key החדש.','ok');
+
+  // Add download button once
+  if(!$('keyMigrateModal').querySelector('.km-dl-row')){
+    const row=document.createElement('div');
+    row.className='km-dl-row';
+    row.style.marginTop='.5rem';
+    row.innerHTML='<button class="btn btn-sky" onclick="dlNewKey()" style="margin-bottom:0"><span>הורד Key חדש PNG</span></button>';
+    $('kmSt').insertAdjacentElement('afterend',row);
+  }
+}
+
+function dlNewKey(){
+  if(!S.newKeyURL) return;
+  const a=document.createElement('a');a.href=S.newKeyURL;a.download='illusion_key_migrated.png';a.click();
+}
+
+// work canvas
+const _wCv=document.createElement('canvas');_wCv.id='wCv';_wCv.style.display='none';document.body.appendChild(_wCv);
+
+// init vault
+renderVault();
+</script>
+</body>
+</html>
